@@ -15,13 +15,16 @@ private val AppColorScheme = lightColorScheme(
     tertiary = Tertiary,
     onTertiary = OnTertiary,
     tertiaryContainer = TertiaryContainer,
+    error = Error,
+    onError = OnError,
     background = Background,
     onBackground = OnBackground,
     surface = Surface,
     onSurface = OnSurface,
     onSurfaceVariant = OnSurfaceVariant,
-    error = Error,
-    onError = OnError
+    outline = Outline,
+    inverseSurface = InverseSurface,
+    inverseOnSurface = InverseOnSurface
 )
 
 @Composable
