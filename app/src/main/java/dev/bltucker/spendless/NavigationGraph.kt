@@ -15,7 +15,6 @@ import dev.bltucker.spendless.registration.newuser.NEW_USER_SCREEN_ROUTE
 import dev.bltucker.spendless.registration.newuser.newUserScreen
 import dev.bltucker.spendless.security.SECURITY_SCREEN_ROUTE
 import dev.bltucker.spendless.security.securityScreen
-import dev.bltucker.spendless.settings.SETTINGS_SCREEN_ROUTE
 import dev.bltucker.spendless.settings.settingsScreen
 import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
@@ -25,7 +24,7 @@ import dev.bltucker.spendless.transactions.export.exportScreen
 fun SpendLessNavigationGraph(navigationController: NavHostController) {
     NavHost(
         navController = navigationController,
-        startDestination = SETTINGS_SCREEN_ROUTE
+        startDestination = LOGIN_SCREEN_ROUTE
     ) {
 
 
@@ -34,8 +33,13 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
                 navigationController.navigate(NEW_USER_SCREEN_ROUTE)
             },
             onLoginSuccess = {
-                navigationController.navigate(DASHBOARD_SCREEN_ROUTE)
-            },)
+                navigationController.navigate(DASHBOARD_SCREEN_ROUTE) {
+                    popUpTo(LOGIN_SCREEN_ROUTE) {
+                        inclusive = true
+                    }
+                }
+            },
+        )
 
         authenticationScreen(onNavigateBack = {
             navigationController.popBackStack()
