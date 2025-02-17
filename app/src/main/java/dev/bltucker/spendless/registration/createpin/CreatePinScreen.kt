@@ -7,14 +7,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
 
 const val CREATE_PIN_SCREEN_ROUTE = "createPin"
 
+@Serializable
+data class CreatePinScreenNavArgs(
+    val username: String
+)
+
 
 fun NavGraphBuilder.createPinScreen(onNavigateBack: () -> Unit) {
-    composable(route = CREATE_PIN_SCREEN_ROUTE){
+    composable<CreatePinScreenNavArgs>{ backStackEntry ->
+        val args = backStackEntry.toRoute<CreatePinScreenNavArgs>()
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "Create Pin Screen")
+            Text(text = "Create Pin Screen: ${args.username}")
         }
     }
 }
