@@ -1,7 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.kotlin.ksp)
+    kotlin("plugin.serialization") version libs.versions.kotlin.get()
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -28,32 +32,97 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
+    testOptions{
+        unitTests.isReturnDefaultValues = true
+    }
+
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+}
+
+kapt {
+    correctErrorTypes = true
+    useBuildCache = true
+    arguments {
+        arg("dagger.fastInit", "true")
+        arg("dagger.hilt.android.internal.disableAndroidSuperclassValidation", "true")
+        arg("kapt.kotlin.generated", "true")
     }
 }
 
 dependencies {
 
+    // Core
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    coreLibraryDesugaring(libs.android.desugar)
+
+    // Compose
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.activity)
+    implementation(libs.compose.animation)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.icons.extended)
+    implementation(libs.compose.tooling.preview)
+    debugImplementation(libs.compose.tooling)
+
+    // Kotlinx
+    implementation(libs.kotlinx.serialization.json)
+
+    // Lifecycle
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.savedstate)
+    implementation(libs.lifecycle.service)
+    implementation(libs.lifecycle.process)
+
+    // Navigation
+    implementation(libs.navigation.compose)
+    implementation(libs.hilt.navigation.compose)
+
+    // Dependency Injection
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+
+    // Image Loading
+    implementation(libs.coil.compose)
+
+    // Local Storage
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.datastore)
+
+    //Splash
+    implementation(libs.core.splashscreen)
+
+    // Testing
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    testImplementation(libs.arch.core.testing)
+    testImplementation(libs.lifecycle.runtime.testing)
+    testImplementation(libs.mockk)
+    testImplementation(libs.room.testing)
+
+
+    androidTestImplementation(libs.junit.ext)
+    androidTestImplementation(libs.espresso)
+    androidTestImplementation(libs.arch.core.testing)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.coroutines.test)
 }
