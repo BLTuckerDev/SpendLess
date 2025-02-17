@@ -4,12 +4,14 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import dev.bltucker.spendless.authentication.authenticationScreen
+import dev.bltucker.spendless.dashboard.DASHBOARD_SCREEN_ROUTE
 import dev.bltucker.spendless.dashboard.dashboardScreen
 import dev.bltucker.spendless.login.LOGIN_SCREEN_ROUTE
 import dev.bltucker.spendless.login.loginScreen
 import dev.bltucker.spendless.preferences.PREFERENCES_SCREEN_ROUTE
 import dev.bltucker.spendless.preferences.preferencesScreen
 import dev.bltucker.spendless.registration.createpin.createPinScreen
+import dev.bltucker.spendless.registration.newuser.NEW_USER_SCREEN_ROUTE
 import dev.bltucker.spendless.registration.newuser.newUserScreen
 import dev.bltucker.spendless.security.SECURITY_SCREEN_ROUTE
 import dev.bltucker.spendless.security.securityScreen
@@ -27,9 +29,13 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
     ) {
 
 
-        loginScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        loginScreen(
+            onNavigateToNewUser = {
+                navigationController.navigate(NEW_USER_SCREEN_ROUTE)
+            },
+            onLoginSuccess = {
+                navigationController.navigate(DASHBOARD_SCREEN_ROUTE)
+            },)
 
         authenticationScreen(onNavigateBack = {
             navigationController.popBackStack()
