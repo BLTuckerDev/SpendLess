@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-const val PREFERENCES_SCREEN_ROUTE = "login"
+const val PREFERENCES_SCREEN_ROUTE = "preferences"
 
 
 fun NavGraphBuilder.preferencesScreen(onNavigateBack: () -> Unit) {
