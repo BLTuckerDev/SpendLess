@@ -8,9 +8,8 @@ import dev.bltucker.spendless.dashboard.DASHBOARD_SCREEN_ROUTE
 import dev.bltucker.spendless.dashboard.dashboardScreen
 import dev.bltucker.spendless.login.LOGIN_SCREEN_ROUTE
 import dev.bltucker.spendless.login.loginScreen
-import dev.bltucker.spendless.preferences.PREFERENCES_SCREEN_ROUTE
+import dev.bltucker.spendless.preferences.PreferencesScreenNavArgs
 import dev.bltucker.spendless.preferences.preferencesScreen
-import dev.bltucker.spendless.registration.createpin.CREATE_PIN_SCREEN_ROUTE
 import dev.bltucker.spendless.registration.createpin.CreatePinScreenNavArgs
 import dev.bltucker.spendless.registration.createpin.createPinScreen
 import dev.bltucker.spendless.registration.newuser.NEW_USER_SCREEN_ROUTE
@@ -55,9 +54,14 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             navigationController.popBackStack()
         })
 
-        createPinScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        createPinScreen(
+            onNavigateBack = {
+                navigationController.popBackStack()
+            },
+            onNavigateToPreferences = { username, pin ->
+                navigationController.navigate(PreferencesScreenNavArgs(userId = null, username = username, pin = pin))
+            }
+        )
 
         newUserScreen(
             onNavigateBack = {
@@ -79,8 +83,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             onNavigateBack = {
                 navigationController.popBackStack()
             },
-            onNavigateToPreferences = {
-                navigationController.navigate(PREFERENCES_SCREEN_ROUTE)
+            onNavigateToPreferences = { userId ->
+                navigationController.navigate(PreferencesScreenNavArgs(userId))
             },
             onNavigateToSecurity = {
                 navigationController.navigate(SECURITY_SCREEN_ROUTE)

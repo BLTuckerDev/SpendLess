@@ -23,9 +23,7 @@ class PinConverter @Inject constructor() {
         val salt: String
     )
 
-    fun hashPin(pin: String?): HashResult? {
-        if (pin == null) return null
-
+    fun hashPin(pin: String): HashResult {
         return try {
             val salt = generateSalt()
             val hash = generateHash(pin, salt)

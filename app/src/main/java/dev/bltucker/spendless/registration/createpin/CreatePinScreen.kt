@@ -1,16 +1,15 @@
 package dev.bltucker.spendless.registration.createpin
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
-
-const val CREATE_PIN_SCREEN_ROUTE = "createPin"
 
 @Serializable
 data class CreatePinScreenNavArgs(
@@ -18,11 +17,48 @@ data class CreatePinScreenNavArgs(
 )
 
 
-fun NavGraphBuilder.createPinScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.createPinScreen(onNavigateBack: () -> Unit,
+                                    onNavigateToPreferences: (String, String) -> Unit) {
     composable<CreatePinScreenNavArgs>{ backStackEntry ->
         val args = backStackEntry.toRoute<CreatePinScreenNavArgs>()
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "Create Pin Screen: ${args.username}")
+
+        val viewModel = hiltViewModel<CreatePinScreenViewModel>()
+        val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        LaunchedEffect(model.shouldNavigateToPreferences) {
+            if(model.shouldNavigateToPreferences){
+                val username = model.username
+                val pin = model.initialPin
+                onNavigateToPreferences(username, pin)
+                viewModel.onHandledNavigation()
+            }
+        }
+
+        BackHandler {
+            viewModel.onNavigateBack()
+        }
+
+
+        LifecycleStartEffect(Unit) {
+            viewModel.onStart(args.username)
+            onStopOrDispose {}
+        }
+
+
+        if (model.isConfirmingPin) {
+            ConfirmPinContent(
+                model = model,
+                onNavigateBack = viewModel::onNavigateBack,
+                onDigitEntered = viewModel::onConfirmationPinDigitEntered,
+                onDeleteDigit = viewModel::onDeleteConfirmationPinDigit
+            )
+        } else {
+            CreatePinContent(
+                model = model,
+                onNavigateBack = onNavigateBack,
+                onDigitEntered = viewModel::onInitialPinDigitEntered,
+                onDeleteDigit = viewModel::onDeleteInitialPinDigit
+            )
         }
     }
 }

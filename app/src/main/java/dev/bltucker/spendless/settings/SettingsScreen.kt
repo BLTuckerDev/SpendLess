@@ -32,14 +32,14 @@ const val SETTINGS_SCREEN_ROUTE = "settings"
 
 data class SettingsScreenActions(
     val onNavigateBack: () -> Unit,
-    val onPreferencesClick: () -> Unit,
+    val onPreferencesClick: (Long) -> Unit,
     val onSecurityClick: () -> Unit,
     val onLogoutClick: () -> Unit
 )
 
 
 fun NavGraphBuilder.settingsScreen(onNavigateBack: () -> Unit,
-                                   onNavigateToPreferences: () -> Unit,
+                                   onNavigateToPreferences: (Long) -> Unit,
                                    onNavigateToSecurity: () -> Unit,
                                    onNavigateToLogout: () -> Unit) {
     composable(route = SETTINGS_SCREEN_ROUTE) {

@@ -7,14 +7,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
 
-const val PREFERENCES_SCREEN_ROUTE = "preferences"
 
+@Serializable
+data class PreferencesScreenNavArgs(
+    val userId: Long?,
+    val username: String? = null,
+    val pin: String? = null,
+)
 
 fun NavGraphBuilder.preferencesScreen(onNavigateBack: () -> Unit) {
-    composable(route = PREFERENCES_SCREEN_ROUTE){
+    composable<PreferencesScreenNavArgs> { backStackEntry ->
+        val args = backStackEntry.toRoute<PreferencesScreenNavArgs>()
+
+        //if we have a user id then the user has been created
+        //if we dont, then we must have username and pin
+        //if we are missing data -> error state
+
+
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "Preferences Screen")
+            Text(text = "Preferences Screen: ${args.userId}, ${args.username}, ${args.pin}")
         }
     }
 }
