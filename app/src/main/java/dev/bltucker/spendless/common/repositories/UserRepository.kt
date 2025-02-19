@@ -30,4 +30,16 @@ class UserRepository @Inject constructor(
 
         return userId
     }
+
+    suspend fun getUserPreferences(userId: Long): UserPreferences? {
+        return userPreferencesDao.getPreferencesForUser(userId)
+    }
+
+    suspend fun getUserSecuritySettings(userId: Long): SecuritySettings? {
+        return userSecurityDao.getSettingsForUser(userId)
+    }
+
+    suspend fun updateUserPreferences(updatedPreferences: UserPreferences) {
+        userPreferencesDao.update(updatedPreferences)
+    }
 }

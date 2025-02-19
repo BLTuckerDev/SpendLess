@@ -63,7 +63,7 @@ data class LoginScreenActions(
 
 fun NavGraphBuilder.loginScreen(
     onNavigateToNewUser: () -> Unit,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: (Long) -> Unit
 ) {
     composable(route = LOGIN_SCREEN_ROUTE){
         val viewModel = hiltViewModel<LoginViewModel>()
@@ -79,7 +79,7 @@ fun NavGraphBuilder.loginScreen(
 
         LaunchedEffect(model.loginSuccessful) {
             if(model.loginSuccessful){
-                onLoginSuccess()
+                onLoginSuccess(0)//TODO: get the user id to pass to dashboard
                 //TODO inform VM?
             }
         }

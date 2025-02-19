@@ -115,7 +115,7 @@ class CreatePinScreenViewModel @Inject constructor() : ViewModel() {
 
     fun onHandledNavigation() {
         mutableModel.update{
-            it.copy(shouldNavigateToPreferences = false)
+            it.copy(shouldNavigateToPreferences = false, initialPin = "", confirmationPin = "", isConfirmingPin = false)
         }
     }
 }

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import dev.bltucker.spendless.authentication.authenticationScreen
-import dev.bltucker.spendless.dashboard.DASHBOARD_SCREEN_ROUTE
+import dev.bltucker.spendless.dashboard.DashboardScreenNavArgs
 import dev.bltucker.spendless.dashboard.dashboardScreen
 import dev.bltucker.spendless.login.LOGIN_SCREEN_ROUTE
 import dev.bltucker.spendless.login.loginScreen
@@ -33,8 +33,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             onNavigateToNewUser = {
                 navigationController.navigate(NEW_USER_SCREEN_ROUTE)
             },
-            onLoginSuccess = {
-                navigationController.navigate(DASHBOARD_SCREEN_ROUTE) {
+            onLoginSuccess = { userId ->
+                navigationController.navigate(DashboardScreenNavArgs(userId)) {
                     popUpTo(LOGIN_SCREEN_ROUTE) {
                         inclusive = true
                     }
@@ -50,16 +50,40 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             navigationController.popBackStack()
         })
 
-        preferencesScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        preferencesScreen(
+            onNavigateBack = {
+                navigationController.popBackStack()
+            },
+
+            onNavigateBackToPinCreate = { username ->
+                navigationController.popBackStack(
+                    route = CreatePinScreenNavArgs(username),
+                    inclusive = false
+                )
+            },
+
+            onNavigateToDashboard = { userId ->
+                navigationController.navigate(DashboardScreenNavArgs(userId)) {
+                    popUpTo(LOGIN_SCREEN_ROUTE) {
+                        inclusive = false
+                    }
+                }
+            }
+        )
+
 
         createPinScreen(
             onNavigateBack = {
                 navigationController.popBackStack()
             },
             onNavigateToPreferences = { username, pin ->
-                navigationController.navigate(PreferencesScreenNavArgs(userId = null, username = username, pin = pin))
+                navigationController.navigate(
+                    PreferencesScreenNavArgs(
+                        userId = null,
+                        username = username,
+                        pin = pin
+                    )
+                )
             }
         )
 

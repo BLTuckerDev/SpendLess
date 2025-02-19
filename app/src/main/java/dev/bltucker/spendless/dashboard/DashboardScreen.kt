@@ -6,14 +6,21 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import kotlinx.serialization.Serializable
 
-const val DASHBOARD_SCREEN_ROUTE = "dashboard"
+@Serializable
+data class DashboardScreenNavArgs(
+    val userId: Long,
+)
 
 fun NavGraphBuilder.dashboardScreen(onNavigateBack: () -> Unit) {
-    composable(route = DASHBOARD_SCREEN_ROUTE) {
+    composable<DashboardScreenNavArgs>() { backStackEntry ->
+        val args = backStackEntry.toRoute<DashboardScreenNavArgs>()
+
         Box(modifier = Modifier.fillMaxSize()
         ) {
-            Text("Dashboard screen")
+            Text("Dashboard screen: ${args.userId}")
         }
     }
 }
