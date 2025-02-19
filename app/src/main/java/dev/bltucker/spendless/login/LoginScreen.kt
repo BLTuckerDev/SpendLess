@@ -79,8 +79,11 @@ fun NavGraphBuilder.loginScreen(
 
         LaunchedEffect(model.loginSuccessful) {
             if(model.loginSuccessful){
-                onLoginSuccess(0)//TODO: get the user id to pass to dashboard
-                //TODO inform VM?
+                val userId = model.loggedInUserId
+                userId?.let{
+                    onLoginSuccess(0)
+                }
+                viewModel.handledLoginSuccessful()
             }
         }
 

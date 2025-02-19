@@ -5,4 +5,5 @@ data class LoginScreenModel(
     val pin: String = "",
     val loginSuccessful: Boolean = false,
     val errorMessage: String? = null,
+    val loggedInUserId: Long? = null,
 )

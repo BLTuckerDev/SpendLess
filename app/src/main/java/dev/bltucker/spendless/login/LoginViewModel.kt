@@ -56,8 +56,14 @@ class LoginViewModel @Inject constructor(
             }
 
             mutableModel.update {
-                it.copy(loginSuccessful = true, errorMessage = null)
+                it.copy(loginSuccessful = true, loggedInUserId = user.id, errorMessage = null)
             }
+        }
+    }
+
+    fun handledLoginSuccessful() {
+        mutableModel.update {
+            it.copy(loginSuccessful = false, loggedInUserId = null, pin = "")
         }
     }
 }
