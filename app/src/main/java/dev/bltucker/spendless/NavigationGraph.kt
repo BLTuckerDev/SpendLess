@@ -28,7 +28,6 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
         startDestination = LOGIN_SCREEN_ROUTE
     ) {
 
-
         loginScreen(
             onNavigateToNewUser = {
                 navigationController.navigate(NEW_USER_SCREEN_ROUTE)
@@ -41,14 +40,6 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
                 }
             },
         )
-
-        authenticationScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
-
-        dashboardScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
 
         preferencesScreen(
             onNavigateBack = {
@@ -70,7 +61,6 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
                 }
             }
         )
-
 
         createPinScreen(
             onNavigateBack = {
@@ -99,10 +89,6 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             }
         )
 
-        securityScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
-
         settingsScreen(
             onNavigateBack = {
                 navigationController.popBackStack()
@@ -118,6 +104,11 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             }
         )
 
+
+        securityScreen(onNavigateBack = {
+            navigationController.popBackStack()
+        })
+
         allTransactionsScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
@@ -127,6 +118,14 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
         })
 
         exportScreen(onNavigateBack = {
+            navigationController.popBackStack()
+        })
+
+        authenticationScreen(onNavigateBack = {
+            navigationController.popBackStack()
+        })
+
+        dashboardScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
     }
