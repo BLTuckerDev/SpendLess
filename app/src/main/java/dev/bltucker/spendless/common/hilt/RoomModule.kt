@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.bltucker.spendless.common.room.SecuritySettingsDao
 import dev.bltucker.spendless.common.room.SpendLessDatabase
 import dev.bltucker.spendless.common.room.SpendLessUserDao
+import dev.bltucker.spendless.common.room.TransactionDao
 import dev.bltucker.spendless.common.room.UserPreferencesDao
 import javax.inject.Singleton
 
@@ -45,5 +46,11 @@ object RoomModule {
     @Singleton
     fun provideSecuritySettingsDao(database: SpendLessDatabase): SecuritySettingsDao {
         return database.securitySettingsDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransactionDao(database: SpendLessDatabase): TransactionDao {
+        return database.transactionDao()
     }
 }
