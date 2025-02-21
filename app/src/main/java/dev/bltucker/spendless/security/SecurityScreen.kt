@@ -69,6 +69,7 @@ fun NavGraphBuilder.securityScreen(onNavigateBack: () -> Unit) {
             onNavigateBack = onNavigateBack,
             onSessionDurationSelected = viewModel::onSessionDurationChange,
             onLockoutDurationSelected = viewModel::onLockedOutDurationChange,
+            onUpdateBiometricsEnabled = viewModel::onBiometricsEnabledChange,
             onSaveClick = viewModel::onSaveClick
         )
 
@@ -83,6 +84,7 @@ private fun SecurityScreenContent(
     onNavigateBack: () -> Unit,
     onSessionDurationSelected: (Int) -> Unit,
     onLockoutDurationSelected: (Int) -> Unit,
+    onUpdateBiometricsEnabled: (Boolean) -> Unit,
     onSaveClick: () -> Unit
 ) {
     Scaffold(
@@ -130,6 +132,7 @@ private fun SecurityScreenContent(
                 model = model,
                 onSessionDurationSelected = onSessionDurationSelected,
                 onLockoutDurationSelected = onLockoutDurationSelected,
+                onUpdateBiometricsEnabled = onUpdateBiometricsEnabled,
                 onSaveClick = onSaveClick
             )
         }
@@ -142,11 +145,48 @@ private fun SecuritySettingsColumn(
     model: SecuritySettingsModel,
     onSessionDurationSelected: (Int) -> Unit,
     onLockoutDurationSelected: (Int) -> Unit,
+    onUpdateBiometricsEnabled: (Boolean) -> Unit,
     onSaveClick: () -> Unit
 ) {
     Column(
         modifier = modifier.padding(horizontal = 16.dp)
     ) {
+        Text(
+            text = "Biometrics for PIN prompt",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            listOf(true, false).forEachIndexed { index, enabled ->
+                SegmentedButton(
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = 2,
+                        baseShape = RoundedCornerShape(12.dp)
+                    ),
+                    onClick = { onUpdateBiometricsEnabled(enabled) },
+                    selected = model.isBiometricsEnabled == enabled,
+                    modifier = Modifier.weight(1f),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = Color(0xFFEEE5FF),
+                        inactiveContainerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    icon = {},
+                ) {
+                    Text(
+                        text = if(enabled) "Enable" else "Disable",
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         Text(
             text = "Session expiry duration",
             style = MaterialTheme.typography.labelSmall,
@@ -260,12 +300,14 @@ private fun SecurityScreenContentPreview() {
                 userId = 1L,
                 isLoading = false,
                 isError = false,
+                isBiometricsEnabled = true,
                 sessionExpirationTimeMinutes = 15,
                 lockedOutDurationSeconds = 30
             ),
             onNavigateBack = { },
             onSessionDurationSelected = { },
             onLockoutDurationSelected = { },
+            onUpdateBiometricsEnabled = {},
             onSaveClick = { }
         )
     }

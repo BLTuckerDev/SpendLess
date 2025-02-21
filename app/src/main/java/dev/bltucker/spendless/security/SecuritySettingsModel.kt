@@ -9,6 +9,7 @@ data class SecuritySettingsModel(
 
     val sessionExpirationTimeMinutes: Int? = null,
     val lockedOutDurationSeconds: Int? = null,
+    val isBiometricsEnabled: Boolean? = null,
 ){
 
     val SESSION_DURATION_OPTIONS = listOf(5, 15, 30, 60) // In minutes

@@ -51,7 +51,8 @@ class SecuritySettingsScreenViewModel @Inject constructor(
                     isLoading = false,
                     isError = false,
                     sessionExpirationTimeMinutes = settings.sessionDurationMinutes,
-                    lockedOutDurationSeconds = settings.lockoutDurationSeconds
+                    lockedOutDurationSeconds = settings.lockoutDurationSeconds,
+                    isBiometricsEnabled = settings.biometricsEnabled
                 )
             }
         }
@@ -75,16 +76,24 @@ class SecuritySettingsScreenViewModel @Inject constructor(
         }
     }
 
+    fun onBiometricsEnabledChange(enabled: Boolean) {
+        mutableModel.update {
+            it.copy(isBiometricsEnabled = enabled)
+        }
+    }
+
     fun onSaveClick() {
         viewModelScope.launch {
             val userId = mutableModel.value.userId ?: return@launch
             val sessionDuration = mutableModel.value.sessionExpirationTimeMinutes ?: return@launch
             val lockoutDuration = mutableModel.value.lockedOutDurationSeconds ?: return@launch
+            val biometricsEnabled = mutableModel.value.isBiometricsEnabled ?: return@launch
 
             val updatedSettings = SecuritySettings(
                 userId = userId,
                 sessionDurationMinutes = sessionDuration,
-                lockoutDurationSeconds = lockoutDuration
+                lockoutDurationSeconds = lockoutDuration,
+                biometricsEnabled = biometricsEnabled,
             )
 
             userRepository.updateSecuritySettings(updatedSettings)
