@@ -253,7 +253,7 @@ private fun PreferencesScreenColumn(
                 )
             ) {
                 Text(
-                    text = "Start Tracking!",
+                    text = "Save",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )

@@ -22,17 +22,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.common.theme.Surface
 import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
+import kotlinx.serialization.Serializable
 
 
-const val SETTINGS_SCREEN_ROUTE = "settings"
+@Serializable
+data class SettingsScreenNavArgs(
+    val userId: Long
+)
 
 
 data class SettingsScreenActions(
     val onNavigateBack: () -> Unit,
-    val onPreferencesClick: (Long) -> Unit,
+    val onPreferencesClick: () -> Unit,
     val onSecurityClick: () -> Unit,
     val onLogoutClick: () -> Unit
 )
@@ -42,11 +47,11 @@ fun NavGraphBuilder.settingsScreen(onNavigateBack: () -> Unit,
                                    onNavigateToPreferences: (Long) -> Unit,
                                    onNavigateToSecurity: () -> Unit,
                                    onNavigateToLogout: () -> Unit) {
-    composable(route = SETTINGS_SCREEN_ROUTE) {
-
+    composable<SettingsScreenNavArgs>() { backStackEntry ->
+        val args = backStackEntry.toRoute<SettingsScreenNavArgs>()
         val actions = SettingsScreenActions(
             onNavigateBack = onNavigateBack,
-            onPreferencesClick = onNavigateToPreferences,
+            onPreferencesClick = { onNavigateToPreferences(args.userId)},
             onSecurityClick = onNavigateToSecurity,
             onLogoutClick = onNavigateToLogout
         )

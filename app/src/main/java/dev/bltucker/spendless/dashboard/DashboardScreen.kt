@@ -44,7 +44,7 @@ data class DashboardActions(
 
 fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
-    onSettingsClick: () -> Unit,
+    onSettingsClick: (Long) -> Unit,
 
 ) {
     composable<DashboardScreenNavArgs>() { backStackEntry ->
@@ -55,7 +55,7 @@ fun NavGraphBuilder.dashboardScreen(
         }
 
         val dashboardActions = DashboardActions(
-            onSettingsClick = onSettingsClick,
+            onSettingsClick = { onSettingsClick(args.userId)},
         )
 
         DashboardScaffold(
@@ -108,7 +108,10 @@ private fun DashboardScaffold(
                     IconButton(
                         modifier = Modifier
                             .padding(16.dp)
-                            .background(color = Color(0x1FFFFFFF), shape = RoundedCornerShape(16.dp)),
+                            .background(
+                                color = Color(0x1FFFFFFF),
+                                shape = RoundedCornerShape(16.dp)
+                            ),
                         onClick = { dashboardActions.onSettingsClick() }) {
                         Icon(
                             imageVector = Icons.Default.Settings,

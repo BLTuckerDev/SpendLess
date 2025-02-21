@@ -17,7 +17,7 @@ import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
 @Composable
 fun PreferencesAndSecurityCard(
     modifier: Modifier = Modifier,
-    onPreferencesClick: (Long) -> Unit,
+    onPreferencesClick: () -> Unit,
     onSecurityClick: () -> Unit,
 ) {
     ElevatedCard(
@@ -32,8 +32,7 @@ fun PreferencesAndSecurityCard(
         Row(
             modifier = Modifier
                 .clickable {
-                    //TODO need userid
-                    //onPreferencesClick()
+                    onPreferencesClick()
                 }
                 .padding(16.dp)
                 .fillMaxWidth(),

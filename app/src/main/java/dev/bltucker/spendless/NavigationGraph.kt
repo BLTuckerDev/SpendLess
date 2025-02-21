@@ -16,7 +16,7 @@ import dev.bltucker.spendless.registration.newuser.NEW_USER_SCREEN_ROUTE
 import dev.bltucker.spendless.registration.newuser.newUserScreen
 import dev.bltucker.spendless.security.SECURITY_SCREEN_ROUTE
 import dev.bltucker.spendless.security.securityScreen
-import dev.bltucker.spendless.settings.SETTINGS_SCREEN_ROUTE
+import dev.bltucker.spendless.settings.SettingsScreenNavArgs
 import dev.bltucker.spendless.settings.settingsScreen
 import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
@@ -130,8 +130,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             onNavigateBack = {
                 navigationController.popBackStack()
             },
-            onSettingsClick = {
-                navigationController.navigate(SETTINGS_SCREEN_ROUTE)
+            onSettingsClick = { userId ->
+                navigationController.navigate(SettingsScreenNavArgs(userId))
             })
     }
 }

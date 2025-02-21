@@ -81,7 +81,7 @@ fun NavGraphBuilder.loginScreen(
             if(model.loginSuccessful){
                 val userId = model.loggedInUserId
                 userId?.let{
-                    onLoginSuccess(0)
+                    onLoginSuccess(userId)
                 }
                 viewModel.handledLoginSuccessful()
             }
