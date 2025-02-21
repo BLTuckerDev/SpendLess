@@ -45,14 +45,14 @@ data class SettingsScreenActions(
 
 fun NavGraphBuilder.settingsScreen(onNavigateBack: () -> Unit,
                                    onNavigateToPreferences: (Long) -> Unit,
-                                   onNavigateToSecurity: () -> Unit,
+                                   onNavigateToSecurity: (Long) -> Unit,
                                    onNavigateToLogout: () -> Unit) {
     composable<SettingsScreenNavArgs>() { backStackEntry ->
         val args = backStackEntry.toRoute<SettingsScreenNavArgs>()
         val actions = SettingsScreenActions(
             onNavigateBack = onNavigateBack,
             onPreferencesClick = { onNavigateToPreferences(args.userId)},
-            onSecurityClick = onNavigateToSecurity,
+            onSecurityClick = { onNavigateToSecurity(args.userId)},
             onLogoutClick = onNavigateToLogout
         )
 

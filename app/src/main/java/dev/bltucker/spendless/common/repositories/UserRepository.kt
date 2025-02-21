@@ -42,4 +42,8 @@ class UserRepository @Inject constructor(
     suspend fun updateUserPreferences(updatedPreferences: UserPreferences) {
         userPreferencesDao.update(updatedPreferences)
     }
+
+    suspend fun updateSecuritySettings(updatedSettings: SecuritySettings) {
+        userSecurityDao.update(updatedSettings)
+    }
 }
