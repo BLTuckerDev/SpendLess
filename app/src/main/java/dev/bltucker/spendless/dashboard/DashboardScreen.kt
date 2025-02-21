@@ -1,9 +1,8 @@
 package dev.bltucker.spendless.dashboard
 
-import android.view.RoundedCorner
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,11 +37,30 @@ data class DashboardScreenNavArgs(
     val userId: Long,
 )
 
-fun NavGraphBuilder.dashboardScreen(onNavigateBack: () -> Unit) {
+
+data class DashboardActions(
+    val onSettingsClick: () -> Unit,
+)
+
+fun NavGraphBuilder.dashboardScreen(
+    onNavigateBack: () -> Unit,
+    onSettingsClick: () -> Unit,
+
+) {
     composable<DashboardScreenNavArgs>() { backStackEntry ->
         val args = backStackEntry.toRoute<DashboardScreenNavArgs>()
 
-        DashboardScaffold(modifier = Modifier.fillMaxSize()
+        BackHandler {
+            onNavigateBack()
+        }
+
+        val dashboardActions = DashboardActions(
+            onSettingsClick = onSettingsClick,
+        )
+
+        DashboardScaffold(
+            modifier = Modifier.fillMaxSize(),
+            dashboardActions = dashboardActions,
         )
     }
 }
@@ -52,7 +68,11 @@ fun NavGraphBuilder.dashboardScreen(onNavigateBack: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DashboardScaffold(modifier: Modifier = Modifier){
+private fun DashboardScaffold(
+    modifier: Modifier = Modifier,
+    dashboardActions: DashboardActions,
+
+){
 
     BottomSheetScaffold(
         modifier = modifier,
@@ -89,7 +109,7 @@ private fun DashboardScaffold(modifier: Modifier = Modifier){
                         modifier = Modifier
                             .padding(16.dp)
                             .background(color = Color(0x1FFFFFFF), shape = RoundedCornerShape(16.dp)),
-                        onClick = { /* handle settings click */ }) {
+                        onClick = { dashboardActions.onSettingsClick() }) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
@@ -119,6 +139,10 @@ private fun DashboardScaffold(modifier: Modifier = Modifier){
 @Composable
 fun DashboardScaffoldPreview() {
     SpendLessTheme {
-        DashboardScaffold(modifier = Modifier.fillMaxSize())
+        val actions = DashboardActions(
+            onSettingsClick = {}
+        )
+        DashboardScaffold(modifier = Modifier.fillMaxSize(),
+            dashboardActions = actions)
     }
 }

@@ -125,8 +125,12 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             navigationController.popBackStack()
         })
 
-        dashboardScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        dashboardScreen(
+            onNavigateBack = {
+                navigationController.popBackStack()
+            },
+            onSettingsClick = {
+                navigationController.navigate(SECURITY_SCREEN_ROUTE)
+            })
     }
 }
