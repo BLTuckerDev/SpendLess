@@ -38,7 +38,9 @@ import dev.bltucker.spendless.R
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.room.SpendLessUser
+import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
+import dev.bltucker.spendless.dashboard.composables.AccountBalance
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -177,7 +179,12 @@ private fun DashboardScaffold(
                 .padding(paddingValues)
                 .padding(horizontal = 8.dp)
         ) {
-            Text("Dashboard")
+
+            AccountBalance(
+                modifier = modifier.fillMaxWidth().padding(vertical = 40.dp ,horizontal = 72.dp),
+                accountBalance = model.formattedAccountBalance()
+            )
+
         }
     }
 }
@@ -190,6 +197,7 @@ fun DashboardScaffoldPreview() {
 
         val model = DashboardScreenModel(
             user = SpendLessUser(username = "test", pinHash = "", pinSalt = ""),
+            userPreferences = UserPreferences(0, false, "$", ".", ","),
             isLoading = false,
             isError = false
         )

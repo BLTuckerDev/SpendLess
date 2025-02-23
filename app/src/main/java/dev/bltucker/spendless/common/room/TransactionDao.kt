@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 @Dao
@@ -23,6 +24,9 @@ interface TransactionDao {
 
     @Query(value = "SELECT * FROM transactions WHERE user_id = :userId ORDER BY created_at DESC")
     suspend fun getTransactionsForUser(userId: Long): List<Transaction>
+
+    @Query(value = "SELECT * FROM transactions WHERE user_id = :userId ORDER BY created_at DESC")
+    fun getTransactionsForUserAsFlow(userId: Long): Flow<List<Transaction>>
 
     @Query("SELECT * FROM transactions WHERE user_id = :userId AND created_at BETWEEN :startDate AND :endDate ORDER BY created_at DESC")
     suspend fun getTransactionsForUserInDateRange(

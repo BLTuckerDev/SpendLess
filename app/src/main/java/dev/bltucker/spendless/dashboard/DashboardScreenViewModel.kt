@@ -46,6 +46,23 @@ class DashboardScreenViewModel @Inject constructor(
                     it.copy(user = user, isLoading = false)
                 }
 
+                launch {
+                    val userPreferences = userRepository.getUserPreferences(userId)
+                    mutableModel.update {
+                        it.copy(userPreferences = userPreferences)
+                    }
+                }
+
+                launch{
+                    transactionRepository.getTransactionsForUser(userId).collect{ transactions ->
+                        mutableModel.update {
+                            it.copy()
+                        }
+                    }
+                }
+
+
+
             } catch(ex: Exception){
                 mutableModel.update{
                     it.copy(isError = true, isLoading = false)

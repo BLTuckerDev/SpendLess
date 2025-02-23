@@ -5,6 +5,8 @@ import dev.bltucker.spendless.common.room.Transaction
 import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.room.TransactionDao
 import dev.bltucker.spendless.common.TransactionEncryptor
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.temporal.TemporalAdjusters
@@ -28,6 +30,7 @@ class TransactionRepository @Inject constructor(
     private val transactionDao: TransactionDao,
     private val encryption: TransactionEncryptor
 ) {
+
     suspend fun createTransaction(data: TransactionData): Long {
         val transaction = Transaction(
             userId = data.userId,
@@ -61,21 +64,23 @@ class TransactionRepository @Inject constructor(
         )
     }
 
-    suspend fun getTransactionsForUser(userId: Long): List<TransactionData> {
-        return transactionDao.getTransactionsForUser(userId).map { transaction ->
-            TransactionData(
-                id = transaction.id,
-                userId = transaction.userId,
-                amount = encryption.decrypt(transaction.encryptedAmount).toLong(),
-                isExpense = transaction.isExpense,
-                name = encryption.decrypt(transaction.encryptedName),
-                category = transaction.encryptedCategory?.let {
-                    TransactionCategory.valueOf(encryption.decrypt(it))
-                },
-                note = transaction.encryptedNote?.let { encryption.decrypt(it) },
-                createdAt = transaction.createdAt,
-                recurringFrequency = transaction.recurringFrequency
-            )
+    suspend fun getTransactionsForUser(userId: Long): Flow<List<TransactionData>> {
+        return transactionDao.getTransactionsForUserAsFlow(userId).map { transactions ->
+            transactions.map { transaction ->
+                TransactionData(
+                    id = transaction.id,
+                    userId = transaction.userId,
+                    amount = encryption.decrypt(transaction.encryptedAmount).toLong(),
+                    isExpense = transaction.isExpense,
+                    name = encryption.decrypt(transaction.encryptedName),
+                    category = transaction.encryptedCategory?.let {
+                        TransactionCategory.valueOf(encryption.decrypt(it))
+                    },
+                    note = transaction.encryptedNote?.let { encryption.decrypt(it) },
+                    createdAt = transaction.createdAt,
+                    recurringFrequency = transaction.recurringFrequency
+                )
+            }
         }
     }
 
