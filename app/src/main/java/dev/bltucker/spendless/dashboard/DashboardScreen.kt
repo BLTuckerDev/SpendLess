@@ -22,13 +22,22 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import dev.bltucker.spendless.R
+import dev.bltucker.spendless.common.composables.ErrorScreen
+import dev.bltucker.spendless.common.composables.LoadingSpinner
+import dev.bltucker.spendless.common.room.SpendLessUser
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import kotlinx.serialization.Serializable
 
@@ -49,6 +58,15 @@ fun NavGraphBuilder.dashboardScreen(
 ) {
     composable<DashboardScreenNavArgs>() { backStackEntry ->
         val args = backStackEntry.toRoute<DashboardScreenNavArgs>()
+        val viewModel = hiltViewModel<DashboardScreenViewModel>()
+
+        val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        LifecycleStartEffect(Unit) {
+            viewModel.onStart(args.userId)
+
+            onStopOrDispose {  }
+        }
 
         BackHandler {
             onNavigateBack()
@@ -58,10 +76,17 @@ fun NavGraphBuilder.dashboardScreen(
             onSettingsClick = { onSettingsClick(args.userId)},
         )
 
-        DashboardScaffold(
-            modifier = Modifier.fillMaxSize(),
-            dashboardActions = dashboardActions,
-        )
+        when{
+            model.isLoading -> LoadingSpinner()
+            model.isError -> ErrorScreen()
+            else -> {
+                DashboardScaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    dashboardActions = dashboardActions,
+                    model = model,
+                )
+            }
+        }
     }
 }
 
@@ -71,6 +96,7 @@ fun NavGraphBuilder.dashboardScreen(
 private fun DashboardScaffold(
     modifier: Modifier = Modifier,
     dashboardActions: DashboardActions,
+    model: DashboardScreenModel,
 
 ){
 
@@ -103,11 +129,30 @@ private fun DashboardScaffold(
         sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         topBar = {
             TopAppBar(
-                title = { Text("Username") },
+                title = { Text(
+                    text = model.user?.username ?: "",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.titleLarge)
+                },
                 actions = {
                     IconButton(
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(end = 8.dp)
+                            .background(
+                                color = Color(0x1FFFFFFF),
+                                shape = RoundedCornerShape(16.dp)
+                            ),
+                        onClick = { dashboardActions.onSettingsClick() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.export),
+                            contentDescription = "Export",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
                             .background(
                                 color = Color(0x1FFFFFFF),
                                 shape = RoundedCornerShape(16.dp)
@@ -142,10 +187,18 @@ private fun DashboardScaffold(
 @Composable
 fun DashboardScaffoldPreview() {
     SpendLessTheme {
+
+        val model = DashboardScreenModel(
+            user = SpendLessUser(username = "test", pinHash = "", pinSalt = ""),
+            isLoading = false,
+            isError = false
+        )
+
         val actions = DashboardActions(
             onSettingsClick = {}
         )
         DashboardScaffold(modifier = Modifier.fillMaxSize(),
-            dashboardActions = actions)
+            dashboardActions = actions,
+            model = model)
     }
 }

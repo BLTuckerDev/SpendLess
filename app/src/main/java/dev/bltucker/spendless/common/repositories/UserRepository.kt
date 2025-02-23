@@ -18,6 +18,8 @@ class UserRepository @Inject constructor(
 
     suspend fun getUser(username: String) = userDao.getUserByUsername(username)
 
+    suspend fun getUserById(userId: Long) = userDao.getUserById(userId)
+
     suspend fun createUser(username: String, hashedPin: String, salt: String): Long {
         val user = SpendLessUser(username = username, pinHash = hashedPin, pinSalt = salt)
         val userId = userDao.insert(user)

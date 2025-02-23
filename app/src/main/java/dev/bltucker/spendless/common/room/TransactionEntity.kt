@@ -50,17 +50,25 @@ data class Transaction(
 
 
 
-enum class TransactionCategory {
-    CLOTHING_AND_ACCESSORIES,
-    EDUCATION,
-    ENTERTAINMENT,
-    FOOD_AND_GROCERIES,
-    HEALTH_AND_WELLNESS,
-    HOME,
-    OTHER,
-    PERSONAL_CARE,
-    SAVINGS_AND_INVESTMENTS,
-    TRANSPORTATION
+enum class TransactionCategory(
+    val displayName: String,
+    val emoji: String
+) {
+    HOME("Home", "🏠"),
+    FOOD_AND_GROCERIES("Food & Groceries", "🍕"),
+    ENTERTAINMENT("Entertainment", "💻"),
+    CLOTHING_AND_ACCESSORIES("Clothing & Accessories", "🎁"),
+    HEALTH_AND_WELLNESS("Health & Wellness", "❤️"),
+    PERSONAL_CARE("Personal Care", "🛁"),
+    TRANSPORTATION("Transportation", "🚗"),
+    EDUCATION("Education", "🎓"),
+    SAVING_AND_INVESTMENTS("Saving & Investments", "💎"),
+    OTHER("Other", "⚙️");
+
+    companion object {
+        fun getByDisplayName(name: String): TransactionCategory? =
+            entries.find { it.displayName == name }
+    }
 }
 
 enum class RecurringFrequency {
