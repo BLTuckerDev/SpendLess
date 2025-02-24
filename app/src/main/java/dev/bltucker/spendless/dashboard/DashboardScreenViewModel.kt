@@ -56,7 +56,7 @@ class DashboardScreenViewModel @Inject constructor(
                 launch{
                     transactionRepository.getTransactionsForUser(userId).collect{ transactions ->
                         mutableModel.update {
-                            it.copy()
+                            it.copy(transactions = transactions)
                         }
                     }
                 }
