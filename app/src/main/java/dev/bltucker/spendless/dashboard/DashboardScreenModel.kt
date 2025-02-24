@@ -3,15 +3,52 @@ package dev.bltucker.spendless.dashboard
 import dev.bltucker.spendless.common.repositories.TransactionData
 import dev.bltucker.spendless.common.room.SpendLessUser
 import dev.bltucker.spendless.common.room.UserPreferences
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.math.absoluteValue
+
+private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd")
+
+
+data class TransactionGroup(
+    val dateLabel: String,
+    val transactions: List<TransactionData>
+)
 
 data class DashboardScreenModel(
     val user: SpendLessUser? = null,
     val userPreferences: UserPreferences? = null,
     val transactions: List<TransactionData> = emptyList(),
+    val clickedTransactionId: Long? = null,
     val isLoading: Boolean = false,
     val isError: Boolean = false,
 ) {
+
+    fun formatTransactionDate(date: LocalDateTime): String {
+        val today = LocalDate.now()
+        val transactionDate = date.toLocalDate()
+
+        return when(transactionDate) {
+            today -> "TODAY"
+            today.minusDays(1) -> "YESTERDAY"
+            else -> date.format(dateFormatter)
+        }
+    }
+
+    val transactionsGroupedByDate: List<TransactionGroup> by lazy {
+        transactions
+            .groupBy { it.createdAt.toLocalDate() }
+            .map { (date, transactionsForDate) ->
+                val transactionGroup = TransactionGroup(
+                    dateLabel = formatTransactionDate(date.atStartOfDay()),
+                    transactions = transactionsForDate.sortedByDescending { it.createdAt }
+                )
+                transactionGroup
+            }
+            .sortedByDescending { it.transactions.first().createdAt }
+    }
+
 
     val accountBalance: Long by lazy {
         transactions.fold(0L) { balance, transaction ->

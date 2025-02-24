@@ -1,4 +1,4 @@
-package dev.bltucker.spendless.dashboard.composables
+package dev.bltucker.spendless.common.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -27,7 +27,9 @@ import java.time.LocalDateTime
 @Composable
 fun TransactionByDayItem(modifier: Modifier = Modifier,
                          formattedDate: String,
-                         transactions: List<TransactionData>) {
+                         transactions: List<TransactionData>,
+                         selectedTransactionId: Long?,
+                         onTransactionClicked: (Long) -> Unit) {
     val transactionFormatter = LocalTransactionFormatter.current
     Column(modifier = modifier.background(color = Color.Transparent)) {
         Text(text = formattedDate, style = MaterialTheme.typography.bodySmall)
@@ -36,12 +38,15 @@ fun TransactionByDayItem(modifier: Modifier = Modifier,
         transactions.forEach {
             TransactionListItem(
                 modifier = Modifier.fillMaxWidth(),
+                id = it.id,
                 name = it.name,
                 category = it.category ?: TransactionCategory.OTHER,
                 amount = transactionFormatter.formatAmount(it.amount, it.isExpense),
                 isExpense = it.isExpense,
                 note = it.note,
-            ) { }
+                isSelected = selectedTransactionId == it.id,
+                onItemClick = onTransactionClicked
+            )
         }
 
     }
@@ -131,7 +136,9 @@ private fun TransactionByDayItemPreview() {
                 TransactionByDayItem(
                     modifier = Modifier.fillMaxWidth(),
                     formattedDate = "Today",
-                    transactions = sampleTransactions
+                    transactions = sampleTransactions,
+                    onTransactionClicked = {},
+                    selectedTransactionId = 1,
                 )
             }
         }

@@ -31,26 +31,28 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.bltucker.spendless.R
 import dev.bltucker.spendless.common.room.TransactionCategory
-import dev.bltucker.spendless.common.theme.Primary
-import dev.bltucker.spendless.common.theme.Success
 import dev.bltucker.spendless.common.theme.SpendLessTheme
+import dev.bltucker.spendless.common.theme.Success
 import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
 
 @Composable
 fun TransactionListItem(
     modifier: Modifier = Modifier,
+    id: Long,
     name: String,
     category: TransactionCategory,
     amount: String,
     isExpense: Boolean,
     note: String? = null,
     isSelected: Boolean = false,
-    onItemClick: () -> Unit
+    onItemClick: (Long) -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onItemClick)
+            .clickable(onClick = {
+                onItemClick(id)
+            })
             .animateContentSize(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -145,6 +147,7 @@ private fun TransactionListItemPreview() {
     SpendLessTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             TransactionListItem(
+                id = 1,
                 name = "Starbucks",
                 category = TransactionCategory.FOOD_AND_GROCERIES,
                 amount = "-$7.50",
@@ -157,6 +160,7 @@ private fun TransactionListItemPreview() {
             Spacer(modifier = Modifier.height(8.dp))
 
             TransactionListItem(
+                id = 2,
                 name = "Rick's share - Birthday M.",
                 category = TransactionCategory.OTHER,
                 amount = "$20.00",

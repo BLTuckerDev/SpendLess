@@ -70,4 +70,17 @@ class DashboardScreenViewModel @Inject constructor(
             }
         }
     }
+
+    fun onTransactionClicked(clickedTransactionId: Long) {
+        val latestModel = mutableModel.value
+        if(latestModel.clickedTransactionId == clickedTransactionId){
+            mutableModel.update {
+                it.copy(clickedTransactionId = null)
+            }
+        } else {
+            mutableModel.update {
+                it.copy(clickedTransactionId = clickedTransactionId)
+            }
+        }
+    }
 }

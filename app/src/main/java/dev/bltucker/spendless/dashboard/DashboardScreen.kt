@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -24,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -39,12 +42,17 @@ import dev.bltucker.spendless.R
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.composables.LocalTransactionFormatter
+import dev.bltucker.spendless.common.composables.TransactionByDayItem
 import dev.bltucker.spendless.common.composables.TransactionFormatter
+import dev.bltucker.spendless.common.repositories.TransactionData
+import dev.bltucker.spendless.common.room.RecurringFrequency
 import dev.bltucker.spendless.common.room.SpendLessUser
+import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.dashboard.composables.AccountBalance
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 
 @Serializable
 data class DashboardScreenNavArgs(
@@ -54,6 +62,7 @@ data class DashboardScreenNavArgs(
 
 data class DashboardActions(
     val onSettingsClick: () -> Unit,
+    val onTransactionClicked: (Long) -> Unit
 )
 
 fun NavGraphBuilder.dashboardScreen(
@@ -79,6 +88,7 @@ fun NavGraphBuilder.dashboardScreen(
 
         val dashboardActions = DashboardActions(
             onSettingsClick = { onSettingsClick(args.userId)},
+            onTransactionClicked = viewModel::onTransactionClicked
         )
 
         when{
@@ -123,7 +133,8 @@ private fun DashboardScaffold(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "Latest Transactions",
@@ -133,11 +144,23 @@ private fun DashboardScaffold(
                         Text("Show all")
                     }
                 }
+
+                LazyColumn {
+                    items(model.transactionsGroupedByDate){
+                        TransactionByDayItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            formattedDate = it.dateLabel,
+                            transactions = it.transactions,
+                            selectedTransactionId = model.clickedTransactionId,
+                            onTransactionClicked = dashboardActions.onTransactionClicked,
+                        )
+                    }
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.primary,
         sheetPeekHeight = 400.dp,
-        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetContainerColor = Color(0xFFFEF7FF),
         sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         topBar = {
             TopAppBar(
@@ -203,20 +226,94 @@ private fun DashboardScaffold(
 @Preview
 @Composable
 fun DashboardScaffoldPreview() {
+
+    val transactionFormatter = TransactionFormatter(
+        currencySymbol = "$",
+        thousandsSeparator = ",",
+        decimalSeparator = ".",
+        useBracketsForExpense = true
+    )
+
+    val sampleTransactions = listOf(
+        TransactionData(
+            id = 1,
+            userId = 1,
+            amount = 158999, // $1,589.99
+            isExpense = true,
+            name = "Monthly Rent",
+            category = TransactionCategory.HOME,
+            note = "Rent payment for February",
+            createdAt = LocalDateTime.now(),
+            recurringFrequency = RecurringFrequency.MONTHLY
+        ),
+        TransactionData(
+            id = 2,
+            userId = 1,
+            amount = 12550, // $125.50
+            isExpense = true,
+            name = "Grocery Shopping",
+            category = TransactionCategory.FOOD_AND_GROCERIES,
+            note = null,
+            createdAt = LocalDateTime.now().minusHours(2),
+            recurringFrequency = RecurringFrequency.DOES_NOT_REPEAT
+        ),
+        TransactionData(
+            id = 3,
+            userId = 1,
+            amount = 500000, // $5,000.00
+            isExpense = false,
+            name = "Salary Deposit",
+            category = null,
+            note = "Monthly salary payment",
+            createdAt = LocalDateTime.now().minusHours(4),
+            recurringFrequency = RecurringFrequency.MONTHLY
+        ),
+        TransactionData(
+            id = 4,
+            userId = 1,
+            amount = 4999, // $49.99
+            isExpense = true,
+            name = "Netflix Subscription",
+            category = TransactionCategory.ENTERTAINMENT,
+            note = "Monthly streaming service",
+            createdAt = LocalDateTime.now().minusHours(6),
+            recurringFrequency = RecurringFrequency.MONTHLY
+        ),
+        TransactionData(
+            id = 5,
+            userId = 1,
+            amount = 8500, // $85.00
+            isExpense = true,
+            name = "Gas Station",
+            category = TransactionCategory.TRANSPORTATION,
+            note = null,
+            createdAt = LocalDateTime.now().minusHours(8),
+            recurringFrequency = RecurringFrequency.DOES_NOT_REPEAT
+        )
+    )
     SpendLessTheme {
+
 
         val model = DashboardScreenModel(
             user = SpendLessUser(username = "test", pinHash = "", pinSalt = ""),
+            transactions = sampleTransactions,
             userPreferences = UserPreferences(0, false, "$", ".", ","),
+            clickedTransactionId = 1,
             isLoading = false,
             isError = false
         )
 
         val actions = DashboardActions(
-            onSettingsClick = {}
+            onSettingsClick = {},
+            onTransactionClicked = {},
         )
-        DashboardScaffold(modifier = Modifier.fillMaxSize(),
-            dashboardActions = actions,
-            model = model)
+
+        CompositionLocalProvider(
+            LocalTransactionFormatter provides transactionFormatter
+        ) {
+            DashboardScaffold(modifier = Modifier.fillMaxSize(),
+                dashboardActions = actions,
+                model = model)
+        }
     }
 }
