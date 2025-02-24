@@ -70,7 +70,7 @@ fun TransactionListItem(
                 Surface(
                     modifier = Modifier.size(48.dp),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFEEE5FF)
+                    color = Color(0xFFEADDFF)
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),

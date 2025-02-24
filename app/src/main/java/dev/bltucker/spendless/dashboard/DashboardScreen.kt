@@ -22,6 +22,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +38,8 @@ import androidx.navigation.toRoute
 import dev.bltucker.spendless.R
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
+import dev.bltucker.spendless.common.composables.LocalTransactionFormatter
+import dev.bltucker.spendless.common.composables.TransactionFormatter
 import dev.bltucker.spendless.common.room.SpendLessUser
 import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
@@ -82,11 +85,18 @@ fun NavGraphBuilder.dashboardScreen(
             model.isLoading -> LoadingSpinner()
             model.isError -> ErrorScreen()
             else -> {
-                DashboardScaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    dashboardActions = dashboardActions,
-                    model = model,
-                )
+                CompositionLocalProvider(LocalTransactionFormatter provides TransactionFormatter(
+                    currencySymbol = model.userPreferences?.currencySymbol ?: "$",
+                    thousandsSeparator = model.userPreferences?.thousandsSeparator ?: ",",
+                    decimalSeparator = model.userPreferences?.decimalSeparator ?: ".",
+                    useBracketsForExpense = model.userPreferences?.useBracketsForExpense ?: false
+                )) {
+                    DashboardScaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        dashboardActions = dashboardActions,
+                        model = model,
+                    )
+                }
             }
         }
     }
