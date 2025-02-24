@@ -1,6 +1,7 @@
 # SpendLess - Secure Finance Tracking Android App
 
 SpendLess is a modern Android finance tracking application with a strong focus on security and data protection. It enables users to track their income and expenses while ensuring their financial data remains secure through local encryption and session management.
+The app will create a test user with the username "testUser" and a pin of 12345 on first launch of a debug build. This can be used for demo purposes.
 
 ## Features
 
