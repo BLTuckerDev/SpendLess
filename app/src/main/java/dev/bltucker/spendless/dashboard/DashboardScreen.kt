@@ -62,12 +62,16 @@ data class DashboardScreenNavArgs(
 
 data class DashboardActions(
     val onSettingsClick: () -> Unit,
-    val onTransactionClicked: (Long) -> Unit
+    val onTransactionClicked: (Long) -> Unit,
+    val onShowAllTransactionsClick: () -> Unit,
+    val onExportClick: () -> Unit,
 )
 
 fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
+    onExportClick: () -> Unit,
+    onShowAllTransactionsClick: () -> Unit,
 
 ) {
     composable<DashboardScreenNavArgs>() { backStackEntry ->
@@ -88,7 +92,9 @@ fun NavGraphBuilder.dashboardScreen(
 
         val dashboardActions = DashboardActions(
             onSettingsClick = { onSettingsClick(args.userId)},
-            onTransactionClicked = viewModel::onTransactionClicked
+            onTransactionClicked = viewModel::onTransactionClicked,
+            onExportClick = onExportClick,
+            onShowAllTransactionsClick = onShowAllTransactionsClick
         )
 
         when{
@@ -140,7 +146,7 @@ private fun DashboardScaffold(
                         text = "Latest Transactions",
                         style = MaterialTheme.typography.titleLarge
                     )
-                    TextButton(onClick = { /* Handle show all */ }) {
+                    TextButton(onClick = { dashboardActions.onShowAllTransactionsClick() }) {
                         Text("Show all")
                     }
                 }
@@ -177,7 +183,7 @@ private fun DashboardScaffold(
                                 color = Color(0x1FFFFFFF),
                                 shape = RoundedCornerShape(16.dp)
                             ),
-                        onClick = { dashboardActions.onSettingsClick() }) {
+                        onClick = { dashboardActions.onExportClick() }) {
                         Icon(
                             painter = painterResource(R.drawable.export),
                             contentDescription = "Export",
@@ -306,6 +312,8 @@ fun DashboardScaffoldPreview() {
         val actions = DashboardActions(
             onSettingsClick = {},
             onTransactionClicked = {},
+            onExportClick = {},
+            onShowAllTransactionsClick = {},
         )
 
         CompositionLocalProvider(

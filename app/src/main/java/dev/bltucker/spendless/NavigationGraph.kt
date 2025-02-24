@@ -109,6 +109,21 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             navigationController.popBackStack()
         })
 
+        dashboardScreen(
+            onNavigateBack = {
+                navigationController.popBackStack()
+            },
+            onSettingsClick = { userId ->
+                navigationController.navigate(SettingsScreenNavArgs(userId))
+            },
+            onExportClick = {
+                //TODO
+            },
+            onShowAllTransactionsClick = {
+                //TODO
+            }
+        )
+
 
         // ---------------- TODO ----------------------------
         allTransactionsScreen(onNavigateBack = {
@@ -126,13 +141,5 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
         authenticationScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
-
-        dashboardScreen(
-            onNavigateBack = {
-                navigationController.popBackStack()
-            },
-            onSettingsClick = { userId ->
-                navigationController.navigate(SettingsScreenNavArgs(userId))
-            })
     }
 }
