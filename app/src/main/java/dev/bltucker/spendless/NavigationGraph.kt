@@ -18,6 +18,7 @@ import dev.bltucker.spendless.security.SecurityScreenNavArgs
 import dev.bltucker.spendless.security.securityScreen
 import dev.bltucker.spendless.settings.SettingsScreenNavArgs
 import dev.bltucker.spendless.settings.settingsScreen
+import dev.bltucker.spendless.transactions.alltransactions.AllTransactionsScreenNavArgs
 import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
 import dev.bltucker.spendless.transactions.export.ExportScreenNavArgs
@@ -120,8 +121,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController) {
             onExportClick = { userId ->
                 navigationController.navigate(ExportScreenNavArgs(userId))
             },
-            onShowAllTransactionsClick = {
-                //TODO
+            onShowAllTransactionsClick = { userId ->
+                navigationController.navigate(AllTransactionsScreenNavArgs(userId))
             }
         )
 

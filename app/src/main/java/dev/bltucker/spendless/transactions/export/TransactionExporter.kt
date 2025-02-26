@@ -1,9 +1,7 @@
 package dev.bltucker.spendless.transactions.export
 
-import android.content.Context
 import dev.bltucker.spendless.common.repositories.TransactionRepository
 import dev.bltucker.spendless.common.repositories.UserRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -14,7 +12,6 @@ import javax.inject.Singleton
 
 @Singleton
 class TransactionExporter @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val transactionRepository: TransactionRepository,
     private val userRepository: UserRepository,
     private val pdfExporter: PdfExporter,

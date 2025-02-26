@@ -71,7 +71,7 @@ fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
     onExportClick: (Long) -> Unit,
-    onShowAllTransactionsClick: () -> Unit,
+    onShowAllTransactionsClick: (Long) -> Unit,
 
 ) {
     composable<DashboardScreenNavArgs>() { backStackEntry ->
@@ -93,8 +93,11 @@ fun NavGraphBuilder.dashboardScreen(
         val dashboardActions = DashboardActions(
             onSettingsClick = { onSettingsClick(args.userId)},
             onTransactionClicked = viewModel::onTransactionClicked,
-            onExportClick = { onExportClick(args.userId) },
-            onShowAllTransactionsClick = onShowAllTransactionsClick
+            onExportClick = {
+                //TODO export bottomsheet
+                onExportClick(args.userId)
+                            },
+            onShowAllTransactionsClick = { onShowAllTransactionsClick(args.userId) }
         )
 
         when{
@@ -176,19 +179,21 @@ private fun DashboardScaffold(
                     style = MaterialTheme.typography.titleLarge)
                 },
                 actions = {
-                    IconButton(
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .background(
-                                color = Color(0x1FFFFFFF),
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        onClick = { dashboardActions.onExportClick() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.export),
-                            contentDescription = "Export",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
+                    if(model.transactions.isNotEmpty()){
+                        IconButton(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .background(
+                                    color = Color(0x1FFFFFFF),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                            onClick = { dashboardActions.onExportClick() }) {
+                            Icon(
+                                painter = painterResource(R.drawable.export),
+                                contentDescription = "Export",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
 
                     IconButton(
