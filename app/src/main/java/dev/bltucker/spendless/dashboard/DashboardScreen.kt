@@ -70,7 +70,7 @@ data class DashboardActions(
 fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
-    onExportClick: () -> Unit,
+    onExportClick: (Long) -> Unit,
     onShowAllTransactionsClick: () -> Unit,
 
 ) {
@@ -93,7 +93,7 @@ fun NavGraphBuilder.dashboardScreen(
         val dashboardActions = DashboardActions(
             onSettingsClick = { onSettingsClick(args.userId)},
             onTransactionClicked = viewModel::onTransactionClicked,
-            onExportClick = onExportClick,
+            onExportClick = { onExportClick(args.userId) },
             onShowAllTransactionsClick = onShowAllTransactionsClick
         )
 
@@ -220,7 +220,9 @@ private fun DashboardScaffold(
         ) {
 
             AccountBalance(
-                modifier = modifier.fillMaxWidth().padding(vertical = 40.dp ,horizontal = 72.dp),
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 40.dp, horizontal = 72.dp),
                 accountBalance = model.formattedAccountBalance()
             )
 

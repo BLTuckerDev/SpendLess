@@ -106,6 +106,10 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
+    // iText
+    implementation(libs.itext.core)
+
+
     // Image Loading
     implementation(libs.coil.compose)
 
