@@ -1,5 +1,10 @@
 package dev.bltucker.spendless.transactions.export
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -7,53 +12,25 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import dev.bltucker.spendless.common.composables.ErrorBanner
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.theme.Primary
 import dev.bltucker.spendless.common.theme.SpendLessTheme
@@ -68,26 +45,21 @@ data class ExportScreenNavArgs(
 fun NavGraphBuilder.exportScreen(
     onNavigateBack: () -> Unit
 ) {
-    composable<ExportScreenNavArgs>{ backStackEntry ->
+    composable<ExportScreenNavArgs> { backStackEntry ->
         val args = backStackEntry.toRoute<ExportScreenNavArgs>()
         val viewModel = hiltViewModel<ExportScreenViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
 
-        LifecycleStartEffect(Unit) {
-            viewModel.onStart(args.userId)
-            onStopOrDispose {  }
-        }
-
-        ExportScreenContent(
+        ExportScreenWithPermissions(
             model = model,
-            onCloseClick = onNavigateBack,
+            onNavigateBack = onNavigateBack,
+            onExportClick = viewModel::onExportClick,
             onExportDateRangeDropdownToggle = viewModel::onExportDateRangeDropdownToggle,
             onExportDateRangeSelected = viewModel::onExportDateRangeSelected,
             onFormatDropdownToggle = viewModel::onFormatDropdownToggle,
             onFormatSelected = viewModel::onFormatSelected,
             onSpecificMonthDropdownToggle = viewModel::onSpecificMonthDropdownToggle,
             onSpecificMonthSelected = viewModel::onSpecificMonthSelected,
-            onExportClick = viewModel::onExportClick
         )
 
         LaunchedEffect(model.exportSuccessful) {
@@ -95,6 +67,109 @@ fun NavGraphBuilder.exportScreen(
                 viewModel.onExportComplete()
                 onNavigateBack()
             }
+        }
+
+        LaunchedEffect(Unit) {
+            viewModel.onStart(args.userId)
+        }
+    }
+}
+
+@Composable
+fun ExportScreenWithPermissions(
+    modifier: Modifier = Modifier,
+    model: ExportScreenModel,
+    onNavigateBack: () -> Unit,
+    onExportClick: () -> Unit,
+    onExportDateRangeDropdownToggle: () -> Unit,
+    onExportDateRangeSelected: (ExportDateRange) -> Unit,
+    onFormatDropdownToggle: () -> Unit,
+    onFormatSelected: (ExportFormat) -> Unit,
+    onSpecificMonthDropdownToggle: () -> Unit,
+    onSpecificMonthSelected: (SpecificMonthOption) -> Unit,
+) {
+    val context = LocalContext.current
+
+    // Check if we need runtime permission
+    val needsPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+
+    var hasPermission by remember {
+        mutableStateOf(
+            !needsPermission || ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasPermission = isGranted
+    }
+
+    if (!hasPermission) {
+        PermissionRequest(
+            onRequestPermission = {
+                permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        )
+    } else {
+        ExportScreenContent(
+            modifier = modifier,
+            model = model,
+            onCloseClick = onNavigateBack,
+            onExportClick = onExportClick,
+            onExportDateRangeDropdownToggle = onExportDateRangeDropdownToggle,
+            onExportDateRangeSelected = onExportDateRangeSelected,
+            onFormatDropdownToggle = onFormatDropdownToggle,
+            onFormatSelected = onFormatSelected,
+            onSpecificMonthDropdownToggle = onSpecificMonthDropdownToggle,
+            onSpecificMonthSelected = onSpecificMonthSelected
+        )
+    }
+}
+
+@Composable
+fun PermissionRequest(
+    modifier: Modifier = Modifier,
+    onRequestPermission: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Storage Permission Required",
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "SpendLess needs permission to save exported files to your Downloads folder.",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onRequestPermission,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Primary
+            )
+        ) {
+            Text(
+                text = "Grant Permission",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
 }

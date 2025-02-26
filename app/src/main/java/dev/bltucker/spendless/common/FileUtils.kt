@@ -1,5 +1,6 @@
 package dev.bltucker.spendless.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Environment
@@ -25,6 +26,7 @@ object FileUtils {
      * @param fileWriter Function that writes to the provided OutputStream
      * @return The file that was saved (either direct file or temp file depending on API level)
      */
+    @SuppressLint("MissingPermission")
     fun saveFileToDownloads(
         context: Context,
         fileName: String,
@@ -37,7 +39,7 @@ object FileUtils {
         }
         // For older versions, use direct file access (requires WRITE_EXTERNAL_STORAGE permission)
         else {
-            return saveFileDirectly(context, fileName, fileWriter)
+            return saveFileDirectly(fileName, fileWriter)
         }
     }
 
