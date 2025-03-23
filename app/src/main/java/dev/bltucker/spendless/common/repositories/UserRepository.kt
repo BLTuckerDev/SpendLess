@@ -1,5 +1,6 @@
 package dev.bltucker.spendless.common.repositories
 
+import dev.bltucker.spendless.common.UserSessionManager
 import dev.bltucker.spendless.common.room.SecuritySettings
 import dev.bltucker.spendless.common.room.SecuritySettingsDao
 import dev.bltucker.spendless.common.room.SpendLessUser
@@ -14,7 +15,20 @@ class UserRepository @Inject constructor(
     private val userDao: SpendLessUserDao,
     private val userSecurityDao: SecuritySettingsDao,
     private val userPreferencesDao: UserPreferencesDao,
+    private val userSessionManager: UserSessionManager,
     ) {
+
+    fun saveLastLoggedInUser(userId: Long) {
+        userSessionManager.saveLastLoggedInUser(userId)
+    }
+
+    fun getLastLoggedInUser(): Long? {
+        return userSessionManager.getLastLoggedInUser()
+    }
+
+    fun clearLastLoggedInUser() {
+        userSessionManager.clearLastLoggedInUser()
+    }
 
     suspend fun getUser(username: String) = userDao.getUserByUsername(username)
 

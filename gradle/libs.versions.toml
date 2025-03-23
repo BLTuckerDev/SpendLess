@@ -11,6 +11,7 @@ datastore = "1.1.1"
 desugar = "2.0.3"
 espresso = "3.6.1"
 firebase-bom = "33.5.1"
+glance-version = "1.0.0"
 gson = "2.11.0"
 hilt = "2.52"
 hilt-compiler = "1.2.0"
@@ -67,6 +68,11 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 firebase-inappmessaging = { group = "com.google.firebase", name = "firebase-inappmessaging" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf" }
+
+# Glance
+glance-core = { group = "androidx.glance", name = "glance", version.ref = "glance-version" }
+glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance-version" }
+
 
 # Gson
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }

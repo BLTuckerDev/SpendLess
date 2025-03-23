@@ -55,6 +55,8 @@ class LoginViewModel @Inject constructor(
                 return@launch
             }
 
+            userRepository.saveLastLoggedInUser(user.id)
+
             mutableModel.update {
                 it.copy(loginSuccessful = true, loggedInUserId = user.id, errorMessage = null)
             }

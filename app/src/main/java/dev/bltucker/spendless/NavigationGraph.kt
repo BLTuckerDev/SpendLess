@@ -25,10 +25,11 @@ import dev.bltucker.spendless.transactions.export.ExportScreenNavArgs
 import dev.bltucker.spendless.transactions.export.exportScreen
 
 @Composable
-fun SpendLessNavigationGraph(navigationController: NavHostController) {
+fun SpendLessNavigationGraph(navigationController: NavHostController,
+                             startDestination: String = LOGIN_SCREEN_ROUTE) {
     NavHost(
         navController = navigationController,
-        startDestination = LOGIN_SCREEN_ROUTE
+        startDestination = startDestination
     ) {
 
         loginScreen(

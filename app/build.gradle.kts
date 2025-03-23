@@ -87,6 +87,10 @@ dependencies {
     implementation(libs.compose.tooling.preview)
     debugImplementation(libs.compose.tooling)
 
+    // Glance
+    implementation(libs.glance.core)
+    implementation(libs.glance.appwidget)
+
     // Kotlinx
     implementation(libs.kotlinx.serialization.json)
 
