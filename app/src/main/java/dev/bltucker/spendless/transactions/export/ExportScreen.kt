@@ -189,7 +189,7 @@ fun ExportScreenContent(
     onExportClick: () -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().systemBarsPadding(),
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         colors = CardDefaults.cardColors(
             containerColor = SurfaceContainerLowest

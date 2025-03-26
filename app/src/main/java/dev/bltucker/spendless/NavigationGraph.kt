@@ -127,6 +127,9 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             }
         )
 
+        exportScreen(onNavigateBack = {
+            navigationController.popBackStack()
+        })
 
         // ---------------- TODO ----------------------------
         allTransactionsScreen(onNavigateBack = {
@@ -137,9 +140,7 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             navigationController.popBackStack()
         })
 
-        exportScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+
 
         authenticationScreen(onNavigateBack = {
             navigationController.popBackStack()

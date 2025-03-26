@@ -55,22 +55,20 @@ class ExportScreenViewModel @Inject constructor(
         val currentMonth = now.month
         val currentYear = now.year
 
-        // Generate the last 12 months (including current)
-        for (i in 0 until 12) {
-            val date = now.minusMonths(i.toLong())
-            val monthName = date.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
-            val year = date.year
+        for (monthValue in 1..currentMonth.value) {
+            val month = java.time.Month.of(monthValue)
+            val monthName = month.getDisplayName(TextStyle.FULL, Locale.getDefault())
 
             months.add(
                 SpecificMonthOption(
                     month = monthName,
-                    year = year,
-                    isCurrentMonth = date.month == currentMonth && date.year == currentYear
+                    year = currentYear,
+                    isCurrentMonth = month == currentMonth
                 )
             )
         }
 
-        return months
+        return months.reversed()
     }
 
     fun onExportDateRangeDropdownToggle() {
