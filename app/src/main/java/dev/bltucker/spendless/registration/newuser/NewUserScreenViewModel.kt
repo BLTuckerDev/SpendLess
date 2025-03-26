@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.bltucker.spendless.common.repositories.UserRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -15,6 +17,9 @@ class NewUserScreenViewModel @Inject constructor(private val userRepository: Use
 
     private val mutableModel = MutableStateFlow(NewUserScreenModel())
     val observableModel: StateFlow<NewUserScreenModel> = mutableModel
+
+    private var bannerDismissJob: Job? = null
+
 
     fun onUsernameChange(username: String) {
         val trimmedUsername = username.trim()
@@ -34,12 +39,7 @@ class NewUserScreenViewModel @Inject constructor(private val userRepository: Use
             val user = userRepository.getUser(currentUsername)
 
             if (user != null) {
-                mutableModel.update {
-                    it.copy(
-                        errorMessage = "This username has been taken already",
-                        canAdvanceToPinCreation = false
-                    )
-                }
+                setErrorMessage("This username has been taken already")
                 return@launch
             }
 
@@ -55,5 +55,19 @@ class NewUserScreenViewModel @Inject constructor(private val userRepository: Use
         }
     }
 
+    private fun setErrorMessage(errorMessage: String) {
+        bannerDismissJob?.cancel()
+
+        mutableModel.update {
+            it.copy(errorMessage = errorMessage)
+        }
+
+        bannerDismissJob = viewModelScope.launch {
+            delay(2_000)
+            mutableModel.update {
+                it.copy(errorMessage = null)
+            }
+        }
+    }
 
 }

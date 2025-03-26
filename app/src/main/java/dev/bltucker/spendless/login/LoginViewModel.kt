@@ -2,8 +2,11 @@ package dev.bltucker.spendless.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.bltucker.spendless.common.repositories.UserRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -20,6 +23,8 @@ class LoginViewModel @Inject constructor(
     private val mutableModel = MutableStateFlow(LoginScreenModel())
 
     val observableModel: StateFlow<LoginScreenModel> = mutableModel
+
+    private var bannerDismissJob: Job? = null
 
     fun onUsernameChange(username: String) {
         mutableModel.update {
@@ -40,18 +45,14 @@ class LoginViewModel @Inject constructor(
             val user = userRepository.getUser(username)
 
             if(user == null){
-                mutableModel.update {
-                    it.copy(errorMessage = "Username or PIN is incorrect")
-                }
+                setErrorMessage("Username or PIN is incorrect")
                 return@launch
             }
 
             val pinMatches = pinConverter.verifyPin(latestModel.pin, user.pinHash, user.pinSalt)
 
             if(!pinMatches){
-                mutableModel.update {
-                    it.copy(errorMessage = "Username or PIN is incorrect")
-                }
+                setErrorMessage("Username or PIN is incorrect")
                 return@launch
             }
 
@@ -66,6 +67,21 @@ class LoginViewModel @Inject constructor(
     fun handledLoginSuccessful() {
         mutableModel.update {
             it.copy(loginSuccessful = false, loggedInUserId = null, pin = "")
+        }
+    }
+
+    private fun setErrorMessage(errorMessage: String) {
+        bannerDismissJob?.cancel()
+
+        mutableModel.update {
+            it.copy(errorMessage = errorMessage)
+        }
+
+        bannerDismissJob = viewModelScope.launch {
+            delay(2_000)
+            mutableModel.update {
+                it.copy(errorMessage = null)
+            }
         }
     }
 }

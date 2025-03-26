@@ -1,10 +1,14 @@
 package dev.bltucker.spendless.registration.createpin
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -14,6 +18,8 @@ class CreatePinScreenViewModel @Inject constructor() : ViewModel() {
     val observableModel: StateFlow<CreatePinScreenModel> = mutableModel
 
     private var hasStarted = false
+
+    private var bannerDismissJob: Job? = null
 
     fun onStart(username: String){
         if(hasStarted){
@@ -99,12 +105,7 @@ class CreatePinScreenViewModel @Inject constructor() : ViewModel() {
         val currentModel = mutableModel.value
 
         if(!currentModel.doPinsMatch()){
-            mutableModel.update {
-                it.copy(
-                    errorMessage = "PINs don't match. Try again",
-                    confirmationPin = "",
-                )
-            }
+            setErrorMessage("PINs don't match. Try again")
             return
         }
 
@@ -116,6 +117,21 @@ class CreatePinScreenViewModel @Inject constructor() : ViewModel() {
     fun onHandledNavigation() {
         mutableModel.update{
             it.copy(shouldNavigateToPreferences = false, initialPin = "", confirmationPin = "", isConfirmingPin = false)
+        }
+    }
+
+    private fun setErrorMessage(errorMessage: String) {
+        bannerDismissJob?.cancel()
+
+        mutableModel.update {
+            it.copy(errorMessage = errorMessage)
+        }
+
+        bannerDismissJob = viewModelScope.launch {
+            delay(2_000)
+            mutableModel.update {
+                it.copy(errorMessage = null, confirmationPin = "")
+            }
         }
     }
 }
