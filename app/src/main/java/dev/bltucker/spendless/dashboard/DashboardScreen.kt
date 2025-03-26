@@ -26,6 +26,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,6 +54,7 @@ import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.dashboard.composables.AccountBalance
+import dev.bltucker.spendless.transactions.export.composables.ExportBottomSheetModal
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
@@ -65,12 +69,12 @@ data class DashboardActions(
     val onTransactionClicked: (Long) -> Unit,
     val onShowAllTransactionsClick: () -> Unit,
     val onExportClick: () -> Unit,
+    val onDismissExportBottomSheet: () -> Unit = {},
 )
 
 fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
-    onExportClick: (Long) -> Unit,
     onShowAllTransactionsClick: (Long) -> Unit,
 
 ) {
@@ -93,11 +97,9 @@ fun NavGraphBuilder.dashboardScreen(
         val dashboardActions = DashboardActions(
             onSettingsClick = { onSettingsClick(args.userId)},
             onTransactionClicked = viewModel::onTransactionClicked,
-            onExportClick = {
-                //TODO export bottomsheet
-                onExportClick(args.userId)
-                            },
-            onShowAllTransactionsClick = { onShowAllTransactionsClick(args.userId) }
+            onExportClick =  viewModel::onShowExportBottomSheet ,
+            onShowAllTransactionsClick = { onShowAllTransactionsClick(args.userId) },
+            onDismissExportBottomSheet = viewModel::onHideExportBottomSheet
         )
 
         when{
@@ -130,6 +132,15 @@ private fun DashboardScaffold(
     model: DashboardScreenModel,
 
 ){
+
+    if (model.showExportBottomSheet) {
+        model.user?.id?.let { userId ->
+            ExportBottomSheetModal(
+                userId = userId,
+                onDismiss = { dashboardActions.onDismissExportBottomSheet()}
+            )
+        }
+    }
 
     BottomSheetScaffold(
         modifier = modifier,
@@ -230,7 +241,6 @@ private fun DashboardScaffold(
                     .padding(vertical = 40.dp, horizontal = 72.dp),
                 accountBalance = model.formattedAccountBalance()
             )
-
         }
     }
 }

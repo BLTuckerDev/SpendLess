@@ -10,7 +10,8 @@ data class AllTransactionsScreenModel(
     val isLoading: Boolean = true,
     val isError: Boolean = false,
     val selectedTransactionId: Long? = null,
-    val transactionGroups: List<TransactionGroup> = emptyList()
+    val transactionGroups: List<TransactionGroup> = emptyList(),
+    val showExportBottomSheet: Boolean = false,
 )
 
 data class TransactionGroup(

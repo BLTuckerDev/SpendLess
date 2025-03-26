@@ -21,8 +21,6 @@ import dev.bltucker.spendless.settings.settingsScreen
 import dev.bltucker.spendless.transactions.alltransactions.AllTransactionsScreenNavArgs
 import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
-import dev.bltucker.spendless.transactions.export.ExportScreenNavArgs
-import dev.bltucker.spendless.transactions.export.exportScreen
 
 @Composable
 fun SpendLessNavigationGraph(navigationController: NavHostController,
@@ -119,17 +117,10 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             onSettingsClick = { userId ->
                 navigationController.navigate(SettingsScreenNavArgs(userId))
             },
-            onExportClick = { userId ->
-                navigationController.navigate(ExportScreenNavArgs(userId))
-            },
             onShowAllTransactionsClick = { userId ->
                 navigationController.navigate(AllTransactionsScreenNavArgs(userId))
             }
         )
-
-        exportScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
 
         // ---------------- TODO ----------------------------
         allTransactionsScreen(onNavigateBack = {

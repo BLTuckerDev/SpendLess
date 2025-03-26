@@ -23,6 +23,7 @@ data class DashboardScreenModel(
     val clickedTransactionId: Long? = null,
     val isLoading: Boolean = false,
     val isError: Boolean = false,
+    val showExportBottomSheet: Boolean = false,
 ) {
 
     fun formatTransactionDate(date: LocalDateTime): String {

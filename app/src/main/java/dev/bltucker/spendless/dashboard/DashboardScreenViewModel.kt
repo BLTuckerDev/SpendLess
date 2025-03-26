@@ -83,4 +83,16 @@ class DashboardScreenViewModel @Inject constructor(
             }
         }
     }
+
+    fun onShowExportBottomSheet(){
+        mutableModel.update {
+            it.copy(showExportBottomSheet = true)
+        }
+    }
+
+    fun onHideExportBottomSheet(){
+        mutableModel.update {
+            it.copy(showExportBottomSheet = false)
+        }
+    }
 }

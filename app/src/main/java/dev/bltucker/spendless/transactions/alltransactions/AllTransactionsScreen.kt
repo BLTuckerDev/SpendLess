@@ -47,6 +47,7 @@ import dev.bltucker.spendless.common.repositories.TransactionData
 import dev.bltucker.spendless.common.room.RecurringFrequency
 import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.theme.SpendLessTheme
+import dev.bltucker.spendless.transactions.export.composables.ExportBottomSheetModal
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
@@ -71,9 +72,8 @@ fun NavGraphBuilder.allTransactionsScreen(onNavigateBack: () -> Unit) {
             model = model,
             onNavigateBack = onNavigateBack,
             onTransactionClicked = viewModel::onTransactionClicked,
-            onExportClicked = {
-                //TODO export bottomsheet
-            }
+           onShowExportBottomSheet = viewModel::onShowExportBottomSheet,
+            onDismissExportBottomSheet = viewModel::onHideExportBottomSheet,
         )
     }
 }
@@ -85,7 +85,8 @@ fun AllTransactionsScreen(
     model: AllTransactionsScreenModel,
     onNavigateBack: () -> Unit,
     onTransactionClicked: (Long) -> Unit,
-    onExportClicked: () -> Unit,
+    onShowExportBottomSheet: () -> Unit,
+    onDismissExportBottomSheet: () -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
@@ -114,7 +115,7 @@ fun AllTransactionsScreen(
                                     color = Color(0x1FFFFFFF),
                                     shape = RoundedCornerShape(16.dp)
                                 ),
-                            onClick = { onExportClicked() }) {
+                            onClick = { onShowExportBottomSheet() }) {
                             Icon(
                                 painter = painterResource(R.drawable.export),
                                 contentDescription = "Export",
@@ -183,6 +184,15 @@ fun AllTransactionsScreen(
 
                         item {
                             Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+
+                    if (model.showExportBottomSheet) {
+                        model.userId?.let { userId ->
+                            ExportBottomSheetModal(
+                                userId = userId,
+                                onDismiss = { onDismissExportBottomSheet()}
+                            )
                         }
                     }
                 }
@@ -280,7 +290,8 @@ fun AllTransactionsScreenPreview() {
             ),
             onNavigateBack = { },
             onTransactionClicked = { },
-            onExportClicked = { },
+            onShowExportBottomSheet = { },
+            onDismissExportBottomSheet = { }
         )
     }
 }

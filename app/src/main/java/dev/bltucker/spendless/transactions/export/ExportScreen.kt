@@ -35,45 +35,11 @@ import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.theme.Primary
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
+import dev.bltucker.spendless.transactions.export.composables.DateRangeDropdown
+import dev.bltucker.spendless.transactions.export.composables.FormatDropdown
+import dev.bltucker.spendless.transactions.export.composables.SpecificMonthDropdown
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class ExportScreenNavArgs(
-    val userId: Long
-)
-
-fun NavGraphBuilder.exportScreen(
-    onNavigateBack: () -> Unit
-) {
-    composable<ExportScreenNavArgs> { backStackEntry ->
-        val args = backStackEntry.toRoute<ExportScreenNavArgs>()
-        val viewModel = hiltViewModel<ExportScreenViewModel>()
-        val model by viewModel.observableModel.collectAsStateWithLifecycle()
-
-        ExportScreenWithPermissions(
-            model = model,
-            onNavigateBack = onNavigateBack,
-            onExportClick = viewModel::onExportClick,
-            onExportDateRangeDropdownToggle = viewModel::onExportDateRangeDropdownToggle,
-            onExportDateRangeSelected = viewModel::onExportDateRangeSelected,
-            onFormatDropdownToggle = viewModel::onFormatDropdownToggle,
-            onFormatSelected = viewModel::onFormatSelected,
-            onSpecificMonthDropdownToggle = viewModel::onSpecificMonthDropdownToggle,
-            onSpecificMonthSelected = viewModel::onSpecificMonthSelected,
-        )
-
-        LaunchedEffect(model.exportSuccessful) {
-            if (model.exportSuccessful) {
-                viewModel.onExportComplete()
-                onNavigateBack()
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            viewModel.onStart(args.userId)
-        }
-    }
-}
 
 @Composable
 fun ExportScreenWithPermissions(
@@ -189,290 +155,137 @@ fun ExportScreenContent(
     onExportClick: () -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth().systemBarsPadding(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
         colors = CardDefaults.cardColors(
             containerColor = SurfaceContainerLowest
         )
     ) {
-        Column {
-            // Sheet Header
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "Export",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                IconButton(
-                    onClick = onCloseClick,
-                    modifier = Modifier.align(Alignment.CenterEnd)
+        if (model.isLoading) {
+            LoadingSpinner(modifier = Modifier.fillMaxWidth())
+        } else {
+            Column(modifier = Modifier) {
+                // Sheet Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurface
+                    Text(
+                        text = "Export",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.align(Alignment.Center)
                     )
+
+                    IconButton(
+                        onClick = onCloseClick,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
-            }
 
-            // Format text
-            Text(
-                text = "Export transactions to CSV format",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Date Range Dropdown
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
+                // Format text
                 Text(
-                    text = "Export Range",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Export transactions to CSV format",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                DateRangeDropdown(
-                    selectedRange = model.exportDateRange,
-                    isExpanded = model.isDateRangeDropdownExpanded,
-                    onToggleDropdown = onExportDateRangeDropdownToggle,
-                    onOptionSelected = onExportDateRangeSelected
-                )
-            }
-
-            // Specific Month dropdown (only shown if Specific Month is selected)
-            AnimatedVisibility(
-                visible = model.exportDateRange == ExportDateRange.SPECIFIC_MONTH,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
-            ) {
+                // Date Range Dropdown
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
+                    Text(
+                        text = "Export Range",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    SpecificMonthDropdown(
-                        selectedMonth = model.selectedSpecificMonth,
-                        availableMonths = model.availableMonths,
-                        isExpanded = model.isSpecificMonthDropdownExpanded,
-                        onToggleDropdown = onSpecificMonthDropdownToggle,
-                        onMonthSelected = onSpecificMonthSelected
+                    DateRangeDropdown(
+                        selectedRange = model.exportDateRange,
+                        isExpanded = model.isDateRangeDropdownExpanded,
+                        onToggleDropdown = onExportDateRangeDropdownToggle,
+                        onOptionSelected = onExportDateRangeSelected
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                // Specific Month dropdown (only shown if Specific Month is selected)
+                AnimatedVisibility(
+                    visible = model.exportDateRange == ExportDateRange.SPECIFIC_MONTH,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(8.dp))
 
-            // Export Format dropdown (MVP doesn't require this)
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "Export format",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                FormatDropdown(
-                    selectedFormat = model.exportFormat,
-                    isExpanded = model.isFormatDropdownExpanded,
-                    onToggleDropdown = onFormatDropdownToggle,
-                    onFormatSelected = onFormatSelected
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Export Button
-            Button(
-                onClick = onExportClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Primary
-                )
-            ) {
-                Text(
-                    text = "Export",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-        }
-    }
-
-    if (model.isLoading) {
-        LoadingSpinner()
-    }
-}
-
-@Composable
-fun DateRangeDropdown(
-    modifier: Modifier = Modifier,
-    selectedRange: ExportDateRange,
-    isExpanded: Boolean,
-    onToggleDropdown: () -> Unit,
-    onOptionSelected: (ExportDateRange) -> Unit
-) {
-    DropdownSelector(
-        modifier = modifier,
-        selectedText = selectedRange.displayName,
-        isExpanded = isExpanded,
-        onToggleDropdown = onToggleDropdown
-    ) {
-        ExportDateRange.values().forEach { range ->
-            DropdownMenuItem(
-                text = { Text(range.displayName) },
-                onClick = { onOptionSelected(range) },
-                trailingIcon = {
-                    if (selectedRange == range) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Primary
+                        SpecificMonthDropdown(
+                            selectedMonth = model.selectedSpecificMonth,
+                            availableMonths = model.availableMonths,
+                            isExpanded = model.isSpecificMonthDropdownExpanded,
+                            onToggleDropdown = onSpecificMonthDropdownToggle,
+                            onMonthSelected = onSpecificMonthSelected
                         )
                     }
                 }
-            )
-        }
-    }
-}
 
-@Composable
-fun SpecificMonthDropdown(
-    modifier: Modifier = Modifier,
-    selectedMonth: SpecificMonthOption?,
-    availableMonths: List<SpecificMonthOption>,
-    isExpanded: Boolean,
-    onToggleDropdown: () -> Unit,
-    onMonthSelected: (SpecificMonthOption) -> Unit
-) {
-    val displayText = selectedMonth?.let { "${it.month} ${it.year}" } ?: "Select a month"
+                Spacer(modifier = Modifier.height(16.dp))
 
-    DropdownSelector(
-        modifier = modifier,
-        selectedText = displayText,
-        isExpanded = isExpanded,
-        onToggleDropdown = onToggleDropdown
-    ) {
-        availableMonths.forEach { month ->
-            DropdownMenuItem(
-                text = {
+                // Export Format dropdown (MVP doesn't require this)
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
                     Text(
-                        text = "${month.month} ${month.year}" +
-                                if (month.isCurrentMonth) " • Current Month" else ""
+                        text = "Export format",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                },
-                onClick = { onMonthSelected(month) },
-                trailingIcon = {
-                    if (selectedMonth == month) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Primary
-                        )
-                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    FormatDropdown(
+                        selectedFormat = model.exportFormat,
+                        isExpanded = model.isFormatDropdownExpanded,
+                        onToggleDropdown = onFormatDropdownToggle,
+                        onFormatSelected = onFormatSelected
+                    )
                 }
-            )
-        }
-    }
-}
 
-@Composable
-fun FormatDropdown(
-    modifier: Modifier = Modifier,
-    selectedFormat: ExportFormat,
-    isExpanded: Boolean,
-    onToggleDropdown: () -> Unit,
-    onFormatSelected: (ExportFormat) -> Unit
-) {
-    DropdownSelector(
-        modifier = modifier,
-        selectedText = selectedFormat.displayName,
-        isExpanded = isExpanded,
-        onToggleDropdown = onToggleDropdown
-    ) {
-        ExportFormat.values().forEach { format ->
-            DropdownMenuItem(
-                text = { Text(format.displayName) },
-                onClick = { onFormatSelected(format) },
-                trailingIcon = {
-                    if (selectedFormat == format) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Selected",
-                            tint = Primary
-                        )
-                    }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Export Button
+                Button(
+                    onClick = onExportClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Primary
+                    )
+                ) {
+                    Text(
+                        text = "Export",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
                 }
-            )
-        }
-    }
-}
 
-@Composable
-fun DropdownSelector(
-    modifier: Modifier = Modifier,
-    selectedText: String,
-    isExpanded: Boolean,
-    onToggleDropdown: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    val rotationState by animateFloatAsState(
-        targetValue = if (isExpanded) 180f else 0f,
-        label = "Dropdown Arrow Animation"
-    )
-
-    Box(modifier = modifier.fillMaxWidth()) {
-        OutlinedCard(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            onClick = onToggleDropdown
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = selectedText,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Toggle dropdown",
-                    modifier = Modifier.rotate(rotationState)
-                )
             }
         }
 
-        DropdownMenu(
-            expanded = isExpanded,
-            onDismissRequest = onToggleDropdown,
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .background(SurfaceContainerLowest)
-                .align(Alignment.TopStart)
-        ) {
-            content()
-        }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
