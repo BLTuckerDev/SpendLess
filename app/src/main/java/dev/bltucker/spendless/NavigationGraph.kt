@@ -110,6 +110,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             navigationController.popBackStack()
         })
 
+        ///TODO needs fab for creating
+        //TODO needs content for the stuff above the bottomsheet
         dashboardScreen(
             onNavigateBack = {
                 navigationController.popBackStack()
@@ -122,16 +124,17 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             }
         )
 
-        // ---------------- TODO ----------------------------
+        //TODO needs a fab for creating
         allTransactionsScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
 
+        // ---------------- TODO ----------------------------
+
+        
         createTransactionsScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
-
-
 
         authenticationScreen(onNavigateBack = {
             navigationController.popBackStack()
