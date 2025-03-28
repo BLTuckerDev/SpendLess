@@ -18,11 +18,13 @@ import dev.bltucker.spendless.common.theme.SpendLessTheme
 @Composable
 fun PinButton(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     text: String,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .size(80.dp),
         colors = ButtonDefaults.buttonColors(

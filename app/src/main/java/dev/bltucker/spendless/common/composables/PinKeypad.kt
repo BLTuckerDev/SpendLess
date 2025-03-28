@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,11 +25,14 @@ import dev.bltucker.spendless.common.theme.SpendLessTheme
 @Composable
 fun PinKeypad(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onDigitEntered: (String) -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    val keypadAlpha = if (enabled) 1f else 0.5f
+
     Column(
-        modifier = modifier,
+        modifier = modifier.alpha(keypadAlpha),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         (1..9 step 3).forEach { rowStart ->
@@ -51,6 +55,7 @@ fun PinKeypad(
             Spacer(modifier = Modifier.weight(1f))
             PinButton(
                 text = "0",
+                enabled = enabled,
                 onClick = { onDigitEntered("0") },
                 modifier = Modifier.weight(1f)
             )
