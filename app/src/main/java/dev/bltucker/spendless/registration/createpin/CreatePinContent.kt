@@ -28,6 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.bltucker.spendless.R
+import dev.bltucker.spendless.common.composables.PinDots
+import dev.bltucker.spendless.common.composables.PinKeypad
 import dev.bltucker.spendless.common.theme.Primary
 import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
 

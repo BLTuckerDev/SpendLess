@@ -1,4 +1,4 @@
-package dev.bltucker.spendless.registration.createpin
+package dev.bltucker.spendless.common.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
