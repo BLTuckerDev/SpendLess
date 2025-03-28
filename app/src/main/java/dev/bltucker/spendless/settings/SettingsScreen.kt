@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
@@ -49,11 +50,15 @@ fun NavGraphBuilder.settingsScreen(onNavigateBack: () -> Unit,
                                    onNavigateToLogout: () -> Unit) {
     composable<SettingsScreenNavArgs>() { backStackEntry ->
         val args = backStackEntry.toRoute<SettingsScreenNavArgs>()
+        val viewModel = hiltViewModel<SettingsScreenViewmodel>()
         val actions = SettingsScreenActions(
             onNavigateBack = onNavigateBack,
             onPreferencesClick = { onNavigateToPreferences(args.userId)},
             onSecurityClick = { onNavigateToSecurity(args.userId)},
-            onLogoutClick = onNavigateToLogout
+            onLogoutClick = {
+                viewModel.onLogout()
+                onNavigateToLogout()
+            }
         )
 
         SettingsScreenContent(

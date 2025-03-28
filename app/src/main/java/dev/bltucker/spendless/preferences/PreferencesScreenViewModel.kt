@@ -3,6 +3,7 @@ package dev.bltucker.spendless.preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.bltucker.spendless.common.UserSessionManager
 import dev.bltucker.spendless.common.repositories.UserRepository
 import dev.bltucker.spendless.login.PinConverter
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PreferencesScreenViewModel @Inject constructor(
+    private val userSession: UserSessionManager,
     private val userRepository: UserRepository,
     private val pinConverter: PinConverter,
 ) : ViewModel() {
@@ -138,6 +140,7 @@ class PreferencesScreenViewModel @Inject constructor(
             val userPin = mutableModel.value.pin ?: return@launch
             val (hash, salt) = pinConverter.hashPin(userPin)
             val userId = userRepository.createUser(username, hash, salt)
+            userSession.saveLastLoggedInUser(userId)
             mutableModel.update {
                 it.copy(userId = userId, shouldNavToDashboard = true)
             }
