@@ -124,6 +124,16 @@ class CreateTransactionScreenViewModel @Inject constructor(
         val userId = currentModel.userId ?: return
 
         viewModelScope.launch {
+
+            val needsToReauth = userRepository.needsReauthentication()
+
+            if(needsToReauth){
+                mutableModel.update {
+                    it.copy(shouldReauthenticate = true)
+                }
+                return@launch
+            }
+
             mutableModel.update { it.copy(isLoading = true) }
 
             try {
@@ -167,5 +177,9 @@ class CreateTransactionScreenViewModel @Inject constructor(
 
     fun onTransactionCreatedHandled() {
         mutableModel.update { it.copy(transactionCreated = false) }
+    }
+
+    fun onClearShouldReauthenticate() {
+        mutableModel.update { it.copy(shouldReauthenticate = false) }
     }
 }

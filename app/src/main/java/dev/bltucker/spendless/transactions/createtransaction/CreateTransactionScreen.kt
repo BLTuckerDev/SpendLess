@@ -1,5 +1,6 @@
 package dev.bltucker.spendless.transactions.createtransaction
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,6 +42,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import dev.bltucker.spendless.authentication.RE_AUTH_SUCCESS
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.room.RecurringFrequency
 import dev.bltucker.spendless.common.room.TransactionCategory
@@ -82,6 +84,28 @@ fun NavGraphBuilder.createTransactionsScreen(onNavigateBack: (Long) -> Unit,
         val userId = backStackEntry.arguments?.getLong("userId") ?: return@composable
         val viewModel = hiltViewModel<CreateTransactionScreenViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        val savedStateHandle = backStackEntry.savedStateHandle
+
+        BackHandler {
+            onNavigateBack(userId)
+        }
+
+        LaunchedEffect(savedStateHandle) {
+            savedStateHandle.getLiveData<Boolean>(RE_AUTH_SUCCESS).observe(backStackEntry) { success ->
+                if (success) {
+                    savedStateHandle.remove<Boolean>(RE_AUTH_SUCCESS)
+                    viewModel.onCreateTransactionClick()
+                }
+            }
+        }
+
+        LaunchedEffect(model.shouldReauthenticate) {
+            if(model.shouldReauthenticate){
+                viewModel.onClearShouldReauthenticate()
+                onPromptForPin()
+            }
+        }
 
         LifecycleStartEffect(Unit) {
             viewModel.onStart(userId)

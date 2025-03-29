@@ -21,7 +21,8 @@ data class CreateTransactionScreenModel(
     val currencySymbol: String = "$",
     val decimalSeparator: String = ".",
     val thousandsSeparator: String = ",",
-    val useBracketsForExpense: Boolean = false
+    val useBracketsForExpense: Boolean = false,
+    val shouldReauthenticate: Boolean = false,
 ) {
     fun isValidName(): Boolean {
         val name = if (isExpense) receiver else sender

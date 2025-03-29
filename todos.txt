@@ -3,7 +3,7 @@ Features:
     Security Settings Saved snackbar
     Preferences Settings Saved snackbar
     Any other action requiring authentication - snackbar success message. so that its clear to the user it completed after a return from auth
-
+    A nicer icon + splash screen logo
 
 Perf:
     Dashboard loading smoothness when there are large numbers of transactions
