@@ -1,7 +1,12 @@
 package dev.bltucker.spendless.dashboard.composables
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -27,7 +32,8 @@ fun PreviousWeekTransactionTotal(modifier: Modifier = Modifier,
         shape = RoundedCornerShape(16.dp),
 
     ) {
-        Column(modifier = Modifier.padding(8.dp)){
+        Column(modifier = Modifier.fillMaxHeight().padding(8.dp),
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,){
             Text(formattedTotal,
                 color = OnSurface,
                 style = MaterialTheme.typography.titleMedium)
@@ -42,9 +48,12 @@ fun PreviousWeekTransactionTotal(modifier: Modifier = Modifier,
 @Composable
 private fun PreviousWeekTransactionTotalPreview(){
     SpendLessTheme {
-        PreviousWeekTransactionTotal(
-            modifier = Modifier.fillMaxWidth(),
-            formattedTotal = "-$762.55"
-        )
+        Box(modifier = Modifier.height(IntrinsicSize.Min)){
+            PreviousWeekTransactionTotal(
+                modifier = Modifier.fillMaxWidth(),
+                formattedTotal = "-$762.55"
+            )
+        }
+
     }
 }

@@ -7,12 +7,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -344,12 +346,16 @@ private fun DashboardScaffold(
                 }
 
 
-                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)){
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+                    .height(IntrinsicSize.Min),
+                ){
                     val transactionFormatter = LocalTransactionFormatter.current
 
                     if(model.largestTransaction != null){
                         LargestTransactionItem(
-                            modifier = Modifier,
+                            modifier = Modifier.weight(2F).fillMaxHeight(),
                             transactionTitle = model.largestTransaction.name,
                             formattedTransactionAmount =  transactionFormatter.formatAmount(model.largestTransaction.amount, model.largestTransaction.isExpense),
                             formattedTransactionDate = model.formatTransactionDate(model.largestTransaction.createdAt)
@@ -357,14 +363,14 @@ private fun DashboardScaffold(
                         )
 
                     } else {
-                        NoLargestTransactionItem(modifier = Modifier.weight(1F))
+                        NoLargestTransactionItem(modifier = Modifier.weight(2F).fillMaxHeight())
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
                     Log.d("DashboardDebug", "Previous Week Total: ${model.previousWeekTotalSpent}")
 
                     PreviousWeekTransactionTotal(
-                        modifier = Modifier.weight(1F),
+                        modifier = Modifier.weight(1F).fillMaxHeight(),
                         formattedTotal = transactionFormatter.formatAmount(model.previousWeekTotalSpent, true))
 
                 }
