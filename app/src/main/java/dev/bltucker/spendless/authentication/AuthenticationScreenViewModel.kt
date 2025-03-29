@@ -18,7 +18,6 @@ import javax.inject.Inject
 class AuthenticationScreenViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val pinConverter: PinConverter,
-    private val userSessionManager: UserSessionManager,
 ) : ViewModel() {
 
     private val mutableModel = MutableStateFlow(AuthenticationScreenModel())
@@ -34,7 +33,7 @@ class AuthenticationScreenViewModel @Inject constructor(
 
         hasStarted = true
 
-        val userId = userSessionManager.getLastLoggedInUser()
+        val userId = userRepository.getLastLoggedInUser()
 
         if (userId == null) {
             mutableModel.update {

@@ -33,7 +33,7 @@ class UserSessionManager @Inject constructor(
         return if (userId == -1L) null else userId
     }
 
-    fun getSessionStartTime(): Long? {
+    private fun getSessionStartTime(): Long? {
         val startTime = prefs.getLong(KEY_SESSION_START_TIME, -1L)
         return if (startTime == -1L) null else startTime
     }

@@ -25,9 +25,13 @@ class UserRepository @Inject constructor(
     fun getLastLoggedInUser(): Long? {
         return userSessionManager.getLastLoggedInUser()
     }
-//TODO wrap userSession manager so everyone just uses the repo
+
     fun clearLastLoggedInUser() {
         userSessionManager.clearLastLoggedInUser()
+    }
+
+    suspend fun needsReauthentication(): Boolean {
+        return userSessionManager.needsReauthentication()
     }
 
     suspend fun getUser(username: String) = userDao.getUserByUsername(username)

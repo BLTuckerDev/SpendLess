@@ -32,9 +32,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userRepository: UserRepository
 
-    @Inject
-    lateinit var userSessionManager: UserSessionManager
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -53,7 +50,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     scope.launch {
                         Log.d("NavDebug", "Resumed - checking session")
-                        val needsToReauth = userSessionManager.needsReauthentication()
+                        val needsToReauth = userRepository.needsReauthentication()
                         if(needsToReauth){
                             navController.navigate(createAuthenticationRoute(null))
                         }
@@ -84,8 +81,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
             else -> {
-                val userId = userSessionManager.getLastLoggedInUser()
-                val needsReAuth = runBlocking { userSessionManager.needsReauthentication() }
+                val userId = userRepository.getLastLoggedInUser()
+                val needsReAuth = runBlocking { userRepository.needsReauthentication() }
 
                 if(needsReAuth && userId != null){
                     createAuthenticationRoute(createDashboardRoute(userId))
