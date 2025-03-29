@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -76,6 +77,10 @@ import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.dashboard.composables.AccountBalance
+import dev.bltucker.spendless.dashboard.composables.LargestTransactionItem
+import dev.bltucker.spendless.dashboard.composables.MostPopularCategory
+import dev.bltucker.spendless.dashboard.composables.NoLargestTransactionItem
+import dev.bltucker.spendless.dashboard.composables.PreviousWeekTransactionTotal
 import dev.bltucker.spendless.transactions.export.composables.ExportBottomSheetModal
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -315,15 +320,54 @@ private fun DashboardScaffold(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues)
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = 8.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
 
                 AccountBalance(
-                    modifier = modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 40.dp, horizontal = 72.dp),
                     accountBalance = model.formattedAccountBalance()
                 )
+
+                Spacer(modifier.weight(1F))
+
+
+                if(model.mostPopularCategory != null){
+                    MostPopularCategory(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        mostPopularCategory = model.mostPopularCategory
+                    )
+                }
+
+
+                Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)){
+                    val transactionFormatter = LocalTransactionFormatter.current
+
+                    if(model.largestTransaction != null){
+                        LargestTransactionItem(
+                            modifier = Modifier,
+                            transactionTitle = model.largestTransaction.name,
+                            formattedTransactionAmount =  transactionFormatter.formatAmount(model.largestTransaction.amount, model.largestTransaction.isExpense),
+                            formattedTransactionDate = model.formatTransactionDate(model.largestTransaction.createdAt)
+
+                        )
+
+                    } else {
+                        NoLargestTransactionItem(modifier = Modifier.weight(1F))
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Log.d("DashboardDebug", "Previous Week Total: ${model.previousWeekTotalSpent}")
+
+                    PreviousWeekTransactionTotal(
+                        modifier = Modifier.weight(1F),
+                        formattedTotal = transactionFormatter.formatAmount(model.previousWeekTotalSpent, true))
+
+                }
             }
         }
 
@@ -409,6 +453,17 @@ fun DashboardScaffoldPreview() {
     )
 
     val sampleTransactions = listOf(
+        TransactionData(
+            id = 235,
+            userId = 1,
+            amount = 12550, // $125.50
+            isExpense = true,
+            name = "Grocery Shopping",
+            category = TransactionCategory.FOOD_AND_GROCERIES,
+            note = null,
+            createdAt = LocalDateTime.now().minusDays(8),
+            recurringFrequency = RecurringFrequency.DOES_NOT_REPEAT
+        ),
         TransactionData(
             id = 1,
             userId = 1,

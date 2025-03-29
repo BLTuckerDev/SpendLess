@@ -2,10 +2,13 @@ package dev.bltucker.spendless.dashboard
 
 import dev.bltucker.spendless.common.repositories.TransactionData
 import dev.bltucker.spendless.common.room.SpendLessUser
+import dev.bltucker.spendless.common.room.TransactionCategory
 import dev.bltucker.spendless.common.room.UserPreferences
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import kotlin.math.absoluteValue
 
 private val dateFormatter = DateTimeFormatter.ofPattern("MMM dd")
@@ -33,6 +36,29 @@ data class DashboardScreenModel(
     val shouldReauthenticate: Boolean = false,
     val reAuthAction: ReAuthAction? = null,
 ) {
+
+    val previousWeekTotalSpent: Long by lazy {
+        val today = LocalDate.now()
+        val startOfWeek = DayOfWeek.SUNDAY
+
+        val previousWeekStartDate =
+            today.with(TemporalAdjusters.previousOrSame(startOfWeek)).minusWeeks(1)
+        val previousWeekEndDate = previousWeekStartDate.plusDays(6)
+
+        transactions.filter { transaction ->
+            val transactionDate = transaction.createdAt.toLocalDate()
+            !transactionDate.isBefore(previousWeekStartDate) && !transactionDate.isAfter(previousWeekEndDate) && transaction.isExpense
+        }.sumOf { it.amount }
+    }
+
+    val largestTransaction = transactions.maxByOrNull { it.amount }
+
+    val mostPopularCategory: TransactionCategory? = transactions.mapNotNull { it.category }
+        .groupingBy { it }
+        .eachCount()
+        .maxByOrNull { it.value }
+        ?.key
+
 
     fun formatTransactionDate(date: LocalDateTime): String {
         val today = LocalDate.now()

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dev.bltucker.spendless.common.theme.OnSurface
 import dev.bltucker.spendless.common.theme.SecondaryContainer
 import dev.bltucker.spendless.common.theme.SpendLessTheme
@@ -26,9 +27,13 @@ fun PreviousWeekTransactionTotal(modifier: Modifier = Modifier,
         shape = RoundedCornerShape(16.dp),
 
     ) {
-        Column(modifier = Modifier.padding(16.dp)){
-            Text(formattedTotal, color = OnSurface, style = MaterialTheme.typography.titleLarge)
-            Text("Previous Week", color = OnSurface, style = MaterialTheme.typography.bodySmall)
+        Column(modifier = Modifier.padding(8.dp)){
+            Text(formattedTotal,
+                color = OnSurface,
+                style = MaterialTheme.typography.titleMedium)
+            Text("Previous Week", color = OnSurface,
+                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall)
         }
     }
 }
