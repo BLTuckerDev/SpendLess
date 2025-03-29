@@ -2,19 +2,23 @@ package dev.bltucker.spendless.dashboard
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,8 +49,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -245,36 +251,12 @@ private fun DashboardScaffold(
             modifier = Modifier,
             sheetContent = {
 
-                Column(
-                    modifier = Modifier
+                if(model.transactions.isEmpty()){
+                    NoTransactionsView(Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Latest Transactions",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        TextButton(onClick = { dashboardActions.onShowAllTransactionsClick() }) {
-                            Text("Show all")
-                        }
-                    }
-
-                    LazyColumn {
-                        items(model.transactionsGroupedByDate) {
-                            TransactionByDayItem(
-                                modifier = Modifier.fillMaxWidth(),
-                                formattedDate = it.dateLabel,
-                                transactions = it.transactions,
-                                selectedTransactionId = model.clickedTransactionId,
-                                onTransactionClicked = dashboardActions.onTransactionClicked,
-                            )
-                        }
-                    }
+                        .padding(16.dp))
+                } else {
+                    TransactionsListView(dashboardActions = dashboardActions,model = model)
                 }
             },
             containerColor = MaterialTheme.colorScheme.primary,
@@ -360,6 +342,60 @@ private fun DashboardScaffold(
     }
 }
 
+@Composable
+private fun TransactionsListView(
+    modifier: Modifier = Modifier,
+    dashboardActions: DashboardActions,
+    model: DashboardScreenModel
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Latest Transactions",
+                style = MaterialTheme.typography.titleLarge
+            )
+            TextButton(onClick = { dashboardActions.onShowAllTransactionsClick() }) {
+                Text("Show all")
+            }
+        }
+
+        LazyColumn {
+            items(model.transactionsGroupedByDate) {
+                TransactionByDayItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    formattedDate = it.dateLabel,
+                    transactions = it.transactions,
+                    selectedTransactionId = model.clickedTransactionId,
+                    onTransactionClicked = dashboardActions.onTransactionClicked,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NoTransactionsView(modifier: Modifier = Modifier){
+    Column(modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally){
+
+        Image(
+            modifier = Modifier.size(122.dp, 114.dp),
+            painter = painterResource(id = R.drawable.no_money), contentDescription = "No Transactions")
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(text = "No transactions to show", fontSize = 20.sp, textAlign = TextAlign.Center)
+    }
+}
 
 @Preview()
 @Composable
