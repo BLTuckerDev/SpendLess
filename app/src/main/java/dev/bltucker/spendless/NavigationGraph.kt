@@ -1,10 +1,12 @@
 package dev.bltucker.spendless
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import dev.bltucker.spendless.authentication.AUTHENTICATION_SCREEN_NAV_ROUTE
 import dev.bltucker.spendless.authentication.authenticationScreen
-import dev.bltucker.spendless.dashboard.DashboardScreenNavArgs
+import dev.bltucker.spendless.dashboard.createDashboardRoute
 import dev.bltucker.spendless.dashboard.dashboardScreen
 import dev.bltucker.spendless.login.LOGIN_SCREEN_ROUTE
 import dev.bltucker.spendless.login.loginScreen
@@ -35,7 +37,7 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
                 navigationController.navigate(NEW_USER_SCREEN_ROUTE)
             },
             onLoginSuccess = { userId ->
-                navigationController.navigate(DashboardScreenNavArgs(userId)) {
+                navigationController.navigate(createDashboardRoute(userId)) {
                     popUpTo(LOGIN_SCREEN_ROUTE) {
                         inclusive = true
                     }
@@ -56,7 +58,7 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             },
 
             onNavigateToDashboard = { userId ->
-                navigationController.navigate(DashboardScreenNavArgs(userId)) {
+                navigationController.navigate(createDashboardRoute(userId)) {
                     popUpTo(LOGIN_SCREEN_ROUTE) {
                         inclusive = false
                     }
@@ -102,7 +104,12 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
                 navigationController.navigate(SecurityScreenNavArgs(userId))
             },
             onNavigateToLogout = {
-                navigationController.navigate(LOGIN_SCREEN_ROUTE)
+                navigationController.navigate(LOGIN_SCREEN_ROUTE) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
             }
         )
 
@@ -121,6 +128,14 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             },
             onShowAllTransactionsClick = { userId ->
                 navigationController.navigate(AllTransactionsScreenNavArgs(userId))
+            },
+            onFallBackToLogin = {
+                navigationController.navigate(LOGIN_SCREEN_ROUTE){
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
             }
         )
 
@@ -129,15 +144,35 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             navigationController.popBackStack()
         })
 
+        authenticationScreen(
+            onNavigateBack = {
+                Log.d("NavDebug", "Popping Back")
+
+                navigationController.popBackStack()
+            },
+            onLogoutClicked = {
+                navigationController.navigate(LOGIN_SCREEN_ROUTE) {
+                    popUpTo(navigationController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            },
+            onNavigateToIntendedDestination = { destinationRoute ->
+                Log.d("NavDebug", "Destination: $destinationRoute")
+                navigationController.navigate(destinationRoute) {
+                    popUpTo(AUTHENTICATION_SCREEN_NAV_ROUTE) { inclusive = true }
+                    launchSingleTop = true
+                }
+            })
+
         // ---------------- TODO ----------------------------
 
-        
+
         createTransactionsScreen(onNavigateBack = {
             navigationController.popBackStack()
         })
 
-        authenticationScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+
     }
 }

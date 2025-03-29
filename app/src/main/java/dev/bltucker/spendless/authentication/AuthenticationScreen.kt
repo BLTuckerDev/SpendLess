@@ -1,5 +1,6 @@
 package dev.bltucker.spendless.authentication
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -9,6 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -16,6 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,14 +65,19 @@ fun createAuthenticationRoute(destinationRoute: String?): String {
 }
 
 
-fun NavGraphBuilder.authenticationScreen(onNavigateBack: () -> Unit,
-                                         onNavigateToIntendedDestination: (String) -> Unit) {
-    composable( route = AUTHENTICATION_SCREEN_NAV_ROUTE,
+fun NavGraphBuilder.authenticationScreen(
+    onNavigateBack: () -> Unit,
+    onLogoutClicked: () -> Unit,
+    onNavigateToIntendedDestination: (String) -> Unit
+) {
+    composable(
+        route = AUTHENTICATION_SCREEN_NAV_ROUTE,
         arguments = listOf(navArgument(DESTINATION_ROUTE_ARG) {
             type = NavType.StringType
             nullable = true
             defaultValue = null
-        })) { backStackEntry ->
+        })
+    ) { backStackEntry ->
         val viewModel = hiltViewModel<AuthenticationScreenViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
 
@@ -78,7 +89,9 @@ fun NavGraphBuilder.authenticationScreen(onNavigateBack: () -> Unit,
         }
 
         LaunchedEffect(model.authenticationSuccessful, destinationRoute) {
+            Log.d("NavDebug", "Launched Effect")
             if (model.authenticationSuccessful) {
+                Log.d("NavDebug", "Launched Effect auth successful")
                 if (destinationRoute != null) {
                     onNavigateToIntendedDestination(destinationRoute)
                 } else {
@@ -87,11 +100,15 @@ fun NavGraphBuilder.authenticationScreen(onNavigateBack: () -> Unit,
             }
         }
 
-                AuthenticationScreen(
+        AuthenticationScreen(
             modifier = Modifier.fillMaxSize(),
             model = model,
             onPinDigitEntered = viewModel::onPinDigitEntered,
-            onDeletePinDigit = viewModel::onDeletePinDigit
+            onDeletePinDigit = viewModel::onDeletePinDigit,
+            onLogoutClicked = {
+                viewModel.onClearSession()
+                onLogoutClicked()
+            }
         )
     }
 }
@@ -100,6 +117,7 @@ fun NavGraphBuilder.authenticationScreen(onNavigateBack: () -> Unit,
 fun AuthenticationScreen(
     modifier: Modifier = Modifier,
     model: AuthenticationScreenModel,
+    onLogoutClicked: () -> Unit,
     onPinDigitEntered: (String) -> Unit,
     onDeletePinDigit: () -> Unit
 ) {
@@ -114,59 +132,85 @@ fun AuthenticationScreen(
             if (model.isLoading && !model.isLocked) {
                 LoadingSpinner()
             } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Spacer(modifier = Modifier.height(72.dp))
-
-                    Box(
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(
                         modifier = Modifier
-                            .size(64.dp)
-                            .background(color = Primary, shape = RoundedCornerShape(20.dp)),
-                        contentAlignment = Alignment.Center
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.wallet_money),
-                            contentDescription = "App Logo"
+                        Spacer(modifier = Modifier.height(72.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .background(color = Primary, shape = RoundedCornerShape(20.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.wallet_money),
+                                contentDescription = "App Logo"
+                            )
+                        }
+
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+
+
+                        Text(
+                            text = if (model.username != null) "Hello, ${model.username}!" else "Hello!",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Text(
+                            text = "Enter your PIN",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        PinDots(pinLength = model.pin.length)
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        PinKeypad(
+                            enabled = !model.isLocked,
+                            onDigitEntered = onPinDigitEntered,
+                            onDeleteClick = onDeletePinDigit
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
 
 
-                    // --- Normal/Error State UI ---
-                    Text(
-                        text = if (model.username != null) "Hello, ${model.username}!" else "Hello!",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Text(
-                        text = "Enter your PIN",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    PinDots(pinLength = model.pin.length)
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
-                    PinKeypad(
-                        enabled = !model.isLocked,
-                        onDigitEntered = onPinDigitEntered,
-                        onDeleteClick = onDeletePinDigit
-                    )
+                    Button(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .size(56.dp)
+                            .align(Alignment.TopEnd),
+                        onClick = { onLogoutClicked() },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0x14A40019),
+                            contentColor = Color(0xFFFF3B30)
+                        ),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.logout),
+                            contentDescription = "Logout",
+                            tint = Color(0xFFFF3B30)
+                        )
+                    }
                 }
+
             }
         }
 
         AnimatedVisibility(
-            visible = model.isError, // Show whenever isError is true
+            visible = model.isError,
             enter = expandVertically(expandFrom = Alignment.Bottom) + fadeIn(),
             exit = shrinkVertically(shrinkTowards = Alignment.Bottom) + fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
@@ -176,8 +220,6 @@ fun AuthenticationScreen(
     }
 }
 
-// --- Previews (Add or Update) ---
-
 @Preview(showBackground = true, name = "Authentication Screen - Error")
 @Composable
 fun AuthenticationScreenErrorPreviewUpdated() {
@@ -186,18 +228,19 @@ fun AuthenticationScreenErrorPreviewUpdated() {
             model = AuthenticationScreenModel(
                 userId = 1L,
                 username = "Jane Doe",
-                pin = "", // PIN resets on error
+                pin = "",
                 isLoading = false,
-                isError = true, // Error is true
-                errorMessage = "Incorrect PIN. Attempts: 1/3", // ViewModel might still hold this
+                isError = true,
+                errorMessage = "Incorrect PIN. Attempts: 1/3",
                 failedAttempts = 1,
-                showFailedAttemptsMessage = true, // ViewModel might still set this
-                isLocked = false, // Not locked yet
+                showFailedAttemptsMessage = true,
+                isLocked = false,
                 lockoutTimeRemainingSeconds = 0,
                 authenticationSuccessful = false
             ),
             onPinDigitEntered = {},
-            onDeletePinDigit = {}
+            onDeletePinDigit = {},
+            onLogoutClicked = {},
         )
     }
 }
@@ -209,19 +252,20 @@ fun AuthenticationScreenLockedPreviewUpdated() {
         AuthenticationScreen(
             model = AuthenticationScreenModel(
                 userId = 1L,
-                username = "Jane Doe", // Username might still be present in model
-                pin = "", // PIN resets
-                isLoading = false, // Not loading during lockout typically
-                isError = true, // Still an error state
-                errorMessage = "Account locked. Try again in 30s", // ViewModel might hold this
+                username = "Jane Doe",
+                pin = "",
+                isLoading = false,
+                isError = true,
+                errorMessage = "Account locked. Try again in 30s",
                 failedAttempts = 3,
                 showFailedAttemptsMessage = true,
-                isLocked = true, // Locked is true
-                lockoutTimeRemainingSeconds = 30, // Example remaining time
+                isLocked = true,
+                lockoutTimeRemainingSeconds = 30,
                 authenticationSuccessful = false
             ),
             onPinDigitEntered = {},
-            onDeletePinDigit = {}
+            onDeletePinDigit = {},
+            onLogoutClicked = {},
         )
     }
 }
@@ -229,12 +273,12 @@ fun AuthenticationScreenLockedPreviewUpdated() {
 @Preview(showBackground = true, name = "Authentication Screen")
 @Composable
 fun AuthenticationScreenPreviewUpdated() {
-    SpendLessTheme { // Wrap in your app's theme
+    SpendLessTheme {
         AuthenticationScreen(
             model = AuthenticationScreenModel(
                 userId = 1L,
-                username = "Jane Doe", // Sample username
-                pin = "12",            // Sample PIN state (e.g., 2 digits entered)
+                username = "Jane Doe",
+                pin = "12",
                 isLoading = false,
                 isError = false,
                 errorMessage = null,
@@ -242,8 +286,9 @@ fun AuthenticationScreenPreviewUpdated() {
                 isLocked = false,
                 authenticationSuccessful = false
             ),
-            onPinDigitEntered = {}, // No-op lambda for preview
-            onDeletePinDigit = {}   // No-op lambda for preview
+            onPinDigitEntered = {},
+            onDeletePinDigit = {},
+            onLogoutClicked = {},
         )
     }
 }

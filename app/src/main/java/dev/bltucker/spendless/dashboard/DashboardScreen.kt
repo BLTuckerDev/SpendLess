@@ -25,6 +25,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +40,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import dev.bltucker.spendless.R
 import dev.bltucker.spendless.common.composables.ErrorScreen
@@ -58,11 +61,6 @@ import dev.bltucker.spendless.transactions.export.composables.ExportBottomSheetM
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
-@Serializable
-data class DashboardScreenNavArgs(
-    val userId: Long,
-)
-
 
 data class DashboardActions(
     val onSettingsClick: () -> Unit,
@@ -72,20 +70,35 @@ data class DashboardActions(
     val onDismissExportBottomSheet: () -> Unit = {},
 )
 
+fun createDashboardRoute(userId: Long): String {
+    return "dashboard/$userId"
+}
+
 fun NavGraphBuilder.dashboardScreen(
+    onFallBackToLogin: () -> Unit,
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
     onShowAllTransactionsClick: (Long) -> Unit,
 
 ) {
-    composable<DashboardScreenNavArgs>() { backStackEntry ->
-        val args = backStackEntry.toRoute<DashboardScreenNavArgs>()
+    composable(
+        route = "dashboard/{userId}",
+        arguments = listOf(navArgument("userId") { type = NavType.LongType })
+    ) { backStackEntry ->
+        val userId = backStackEntry.arguments?.getLong("userId")
+            ?: run {
+                LaunchedEffect(Unit) {
+                    onFallBackToLogin()
+                }
+                -1L
+            }
+
         val viewModel = hiltViewModel<DashboardScreenViewModel>()
 
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
 
         LifecycleStartEffect(Unit) {
-            viewModel.onStart(args.userId)
+            viewModel.onStart(userId)
 
             onStopOrDispose {  }
         }
@@ -95,10 +108,10 @@ fun NavGraphBuilder.dashboardScreen(
         }
 
         val dashboardActions = DashboardActions(
-            onSettingsClick = { onSettingsClick(args.userId)},
+            onSettingsClick = { onSettingsClick(userId)},
             onTransactionClicked = viewModel::onTransactionClicked,
             onExportClick =  viewModel::onShowExportBottomSheet ,
-            onShowAllTransactionsClick = { onShowAllTransactionsClick(args.userId) },
+            onShowAllTransactionsClick = { onShowAllTransactionsClick(userId) },
             onDismissExportBottomSheet = viewModel::onHideExportBottomSheet
         )
 

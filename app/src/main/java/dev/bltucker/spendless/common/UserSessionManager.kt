@@ -6,10 +6,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.core.content.edit
+import dev.bltucker.spendless.common.repositories.UserRepository
 
 @Singleton
 class UserSessionManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val userRepository: dagger.Lazy<UserRepository>,
 ) {
     private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -34,6 +36,20 @@ class UserSessionManager @Inject constructor(
     fun getSessionStartTime(): Long? {
         val startTime = prefs.getLong(KEY_SESSION_START_TIME, -1L)
         return if (startTime == -1L) null else startTime
+    }
+
+    suspend fun needsReauthentication(): Boolean {
+        val userId = getLastLoggedInUser() ?: return false
+        val startTime = getSessionStartTime() ?: return true
+
+        val securitySettings = userRepository.get().getUserSecuritySettings(userId) ?: return false
+
+        val currentTime = System.currentTimeMillis()
+        val sessionDuration = currentTime - startTime
+
+        //TODO reset to real settings
+        return sessionDuration >= 10_000 //securitySettings.sessionDurationMinutes * 60 * 1000
+
     }
 
     fun clearLastLoggedInUser() {
