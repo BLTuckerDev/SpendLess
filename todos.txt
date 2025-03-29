@@ -1,0 +1,10 @@
+Success snackbars:
+    Export complete
+    Security Settings Saved
+    Preferences Settings Saved
+    Any other action requiring authentication. so that its clear to the user it completed after a return from auth
+
+
+Perf:
+    Dashboard loading smoothness when there are large numbers of transactions
+

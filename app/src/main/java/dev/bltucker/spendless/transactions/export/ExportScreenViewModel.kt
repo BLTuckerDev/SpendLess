@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.bltucker.spendless.common.repositories.TransactionRepository
+import dev.bltucker.spendless.common.repositories.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -19,6 +20,7 @@ import javax.inject.Inject
 class ExportScreenViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val transactionExporter: TransactionExporter,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val mutableModel = MutableStateFlow(ExportScreenModel(isLoading = true))
@@ -121,6 +123,16 @@ class ExportScreenViewModel @Inject constructor(
 
     fun onExportClick() {
         viewModelScope.launch {
+
+            val needsToReauth = userRepository.needsReauthentication()
+
+            if(needsToReauth){
+                mutableModel.update {
+                    it.copy(shouldReauthenticate = true)
+                }
+                return@launch
+            }
+
             val userId = mutableModel.value.userId ?: return@launch
             mutableModel.update {
                 it.copy(isLoading = true)
@@ -149,6 +161,12 @@ class ExportScreenViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun onClearShouldReauthenticate(){
+        mutableModel.update {
+            it.copy(shouldReauthenticate = false)
         }
     }
 

@@ -141,6 +141,9 @@ fun SpendLessNavigationGraph(
             onShowAllTransactionsClick = { userId ->
                 navigationController.navigate(AllTransactionsScreenNavArgs(userId))
             },
+            onPromptForPin = {
+                navigationController.navigate(createAuthenticationRoute(null))
+            },
             onFallBackToLogin = {
                 navigationController.navigate(LOGIN_SCREEN_ROUTE) {
                     popUpTo(navigationController.graph.startDestinationId) {
@@ -152,9 +155,14 @@ fun SpendLessNavigationGraph(
         )
 
         //TODO needs a fab for creating
-        allTransactionsScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        allTransactionsScreen(
+            onNavigateBack = {
+                navigationController.popBackStack()
+            },
+            onPromptForPin = {
+                navigationController.navigate(createAuthenticationRoute(null))
+            },
+        )
 
         authenticationScreen(
             onNavigateBack = {

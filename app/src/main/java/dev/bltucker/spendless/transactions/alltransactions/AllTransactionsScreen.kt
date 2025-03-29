@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
@@ -56,7 +57,8 @@ data class AllTransactionsScreenNavArgs(
     val userId: Long
 )
 
-fun NavGraphBuilder.allTransactionsScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.allTransactionsScreen(onNavigateBack: () -> Unit,
+                                          onPromptForPin: () -> Unit,) {
     composable<AllTransactionsScreenNavArgs> { backStackEntry ->
         val args = backStackEntry.toRoute<AllTransactionsScreenNavArgs>()
         val viewModel = hiltViewModel<AllTransactionsScreenViewModel>()
@@ -74,6 +76,8 @@ fun NavGraphBuilder.allTransactionsScreen(onNavigateBack: () -> Unit) {
             onTransactionClicked = viewModel::onTransactionClicked,
            onShowExportBottomSheet = viewModel::onShowExportBottomSheet,
             onDismissExportBottomSheet = viewModel::onHideExportBottomSheet,
+            onPromptForPin = onPromptForPin,
+            backStackEntry = backStackEntry,
         )
     }
 }
@@ -87,6 +91,8 @@ fun AllTransactionsScreen(
     onTransactionClicked: (Long) -> Unit,
     onShowExportBottomSheet: () -> Unit,
     onDismissExportBottomSheet: () -> Unit,
+    onPromptForPin: () -> Unit,
+    backStackEntry: NavBackStackEntry?
 ) {
     Scaffold(
         modifier = modifier,
@@ -191,7 +197,9 @@ fun AllTransactionsScreen(
                         model.userId?.let { userId ->
                             ExportBottomSheetModal(
                                 userId = userId,
-                                onDismiss = { onDismissExportBottomSheet()}
+                                onDismiss = { onDismissExportBottomSheet()},
+                                onPromptForPin = onPromptForPin,
+                                backStackEntry = backStackEntry,
                             )
                         }
                     }
@@ -291,7 +299,9 @@ fun AllTransactionsScreenPreview() {
             onNavigateBack = { },
             onTransactionClicked = { },
             onShowExportBottomSheet = { },
-            onDismissExportBottomSheet = { }
+            onDismissExportBottomSheet = { },
+            onPromptForPin = { },
+            backStackEntry = null
         )
     }
 }

@@ -31,5 +31,6 @@ data class ExportScreenModel(
     val availableMonths: List<SpecificMonthOption> = emptyList(),
     val selectedSpecificMonth: SpecificMonthOption? = null,
     val exportSuccessful: Boolean = false,
-    val exportError: String? = null
+    val exportError: String? = null,
+    val shouldReauthenticate: Boolean = false,
 )

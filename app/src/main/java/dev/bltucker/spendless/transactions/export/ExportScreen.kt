@@ -59,6 +59,7 @@ fun ExportScreenWithPermissions(
     // Check if we need runtime permission
     val needsPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
 
+
     var hasPermission by remember {
         mutableStateOf(
             !needsPermission || ContextCompat.checkSelfPermission(

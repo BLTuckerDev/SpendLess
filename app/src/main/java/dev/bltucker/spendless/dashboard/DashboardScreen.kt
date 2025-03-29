@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
@@ -68,6 +69,7 @@ data class DashboardActions(
     val onShowAllTransactionsClick: () -> Unit,
     val onExportClick: () -> Unit,
     val onDismissExportBottomSheet: () -> Unit = {},
+    val onPromptForPin: () -> Unit = {}
 )
 
 fun createDashboardRoute(userId: Long): String {
@@ -79,6 +81,7 @@ fun NavGraphBuilder.dashboardScreen(
     onNavigateBack: () -> Unit,
     onSettingsClick: (Long) -> Unit,
     onShowAllTransactionsClick: (Long) -> Unit,
+    onPromptForPin: () -> Unit,
 
 ) {
     composable(
@@ -112,7 +115,8 @@ fun NavGraphBuilder.dashboardScreen(
             onTransactionClicked = viewModel::onTransactionClicked,
             onExportClick =  viewModel::onShowExportBottomSheet ,
             onShowAllTransactionsClick = { onShowAllTransactionsClick(userId) },
-            onDismissExportBottomSheet = viewModel::onHideExportBottomSheet
+            onDismissExportBottomSheet = viewModel::onHideExportBottomSheet,
+            onPromptForPin = onPromptForPin
         )
 
         when{
@@ -129,6 +133,7 @@ fun NavGraphBuilder.dashboardScreen(
                         modifier = Modifier.fillMaxSize(),
                         dashboardActions = dashboardActions,
                         model = model,
+                        backStackEntry = backStackEntry
                     )
                 }
             }
@@ -143,13 +148,16 @@ private fun DashboardScaffold(
     modifier: Modifier = Modifier,
     dashboardActions: DashboardActions,
     model: DashboardScreenModel,
+    backStackEntry: NavBackStackEntry?,
 
-){
+    ){
 
     if (model.showExportBottomSheet) {
         model.user?.id?.let { userId ->
             ExportBottomSheetModal(
                 userId = userId,
+                backStackEntry = backStackEntry,
+                onPromptForPin = { dashboardActions.onPromptForPin()},
                 onDismiss = { dashboardActions.onDismissExportBottomSheet()}
             )
         }
@@ -351,7 +359,8 @@ fun DashboardScaffoldPreview() {
         ) {
             DashboardScaffold(modifier = Modifier.fillMaxSize(),
                 dashboardActions = actions,
-                model = model)
+                model = model,
+                backStackEntry = null)
         }
     }
 }
