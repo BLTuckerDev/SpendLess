@@ -1,10 +1,13 @@
-Success snackbars:
-    Export complete
-    Security Settings Saved
-    Preferences Settings Saved
-    Any other action requiring authentication. so that its clear to the user it completed after a return from auth
+Features:
+    Export complete snackbar
+    Security Settings Saved snackbar
+    Preferences Settings Saved snackbar
+    Any other action requiring authentication - snackbar success message. so that its clear to the user it completed after a return from auth
 
 
 Perf:
     Dashboard loading smoothness when there are large numbers of transactions
 
+
+Bugs:
+    Permission checks for export no longer run for devices under Q due to refactor

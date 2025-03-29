@@ -16,6 +16,12 @@ data class TransactionGroup(
     val transactions: List<TransactionData>
 )
 
+enum class ReAuthAction{
+    SHOW_ALL,
+    FAB,
+    SETTINGS,
+}
+
 data class DashboardScreenModel(
     val user: SpendLessUser? = null,
     val userPreferences: UserPreferences? = null,
@@ -24,6 +30,8 @@ data class DashboardScreenModel(
     val isLoading: Boolean = false,
     val isError: Boolean = false,
     val showExportBottomSheet: Boolean = false,
+    val shouldReauthenticate: Boolean = false,
+    val reAuthAction: ReAuthAction? = null,
 ) {
 
     fun formatTransactionDate(date: LocalDateTime): String {

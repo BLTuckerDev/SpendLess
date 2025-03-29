@@ -1,6 +1,6 @@
 package dev.bltucker.spendless.dashboard
 
-import androidx.compose.runtime.internal.isLiveLiteralsEnabled
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,6 +94,32 @@ class DashboardScreenViewModel @Inject constructor(
     fun onHideExportBottomSheet(){
         mutableModel.update {
             it.copy(showExportBottomSheet = false)
+        }
+    }
+
+    fun onClearShouldReauthenticate(){
+        mutableModel.update {
+            it.copy(shouldReauthenticate = false)
+        }
+    }
+
+    suspend fun onCheckForReAuth(reAuthAction: ReAuthAction): Boolean {
+        val needsToReauth =  userRepository.needsReauthentication()
+
+        if(needsToReauth){
+            Log.d("DashboardDebug", "Updating Model")
+            mutableModel.update {
+                it.copy(shouldReauthenticate = true, reAuthAction = reAuthAction)
+            }
+        }
+
+        return needsToReauth
+
+    }
+
+    fun onConsumeReAuthAction() {
+        mutableModel.update {
+            it.copy(reAuthAction = null)
         }
     }
 }

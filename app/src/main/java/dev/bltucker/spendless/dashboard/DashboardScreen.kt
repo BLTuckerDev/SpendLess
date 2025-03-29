@@ -1,5 +1,6 @@
 package dev.bltucker.spendless.dashboard
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +48,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import dev.bltucker.spendless.R
+import dev.bltucker.spendless.authentication.RE_AUTH_SUCCESS
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.composables.LocalTransactionFormatter
@@ -59,6 +62,7 @@ import dev.bltucker.spendless.common.room.UserPreferences
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.dashboard.composables.AccountBalance
 import dev.bltucker.spendless.transactions.export.composables.ExportBottomSheetModal
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
@@ -83,11 +87,12 @@ fun NavGraphBuilder.dashboardScreen(
     onShowAllTransactionsClick: (Long) -> Unit,
     onPromptForPin: () -> Unit,
 
-) {
+    ) {
     composable(
         route = "dashboard/{userId}",
         arguments = listOf(navArgument("userId") { type = NavType.LongType })
     ) { backStackEntry ->
+        val coroutineScope = rememberCoroutineScope()
         val userId = backStackEntry.arguments?.getLong("userId")
             ?: run {
                 LaunchedEffect(Unit) {
@@ -96,39 +101,91 @@ fun NavGraphBuilder.dashboardScreen(
                 -1L
             }
 
+        val savedStateHandle = backStackEntry.savedStateHandle
         val viewModel = hiltViewModel<DashboardScreenViewModel>()
 
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
 
+        Log.d(
+            "DashboardDebug",
+            "reauth action: ${model.reAuthAction}, should reauth: ${model.shouldReauthenticate}"
+        )
+
+        LaunchedEffect(savedStateHandle) {
+            savedStateHandle.getLiveData<Boolean>(RE_AUTH_SUCCESS)
+                .observe(backStackEntry) { success ->
+                    if (success) {
+                        savedStateHandle.remove<Boolean>(RE_AUTH_SUCCESS)
+                        val reAuthAction = model.reAuthAction
+
+                        when (reAuthAction) {
+                            ReAuthAction.SHOW_ALL -> onShowAllTransactionsClick(userId)
+                            ReAuthAction.FAB -> { /* HANDLE FAB */
+                            }
+
+                            ReAuthAction.SETTINGS -> onSettingsClick(userId)
+                            null -> {}
+                        }
+
+                        viewModel.onConsumeReAuthAction()
+                    }
+                }
+        }
+
         LifecycleStartEffect(Unit) {
             viewModel.onStart(userId)
 
-            onStopOrDispose {  }
+            onStopOrDispose { }
         }
 
         BackHandler {
             onNavigateBack()
         }
 
+        LaunchedEffect(model.shouldReauthenticate) {
+            if(model.shouldReauthenticate){
+                onPromptForPin()
+                viewModel.onClearShouldReauthenticate()
+            }
+        }
+
         val dashboardActions = DashboardActions(
-            onSettingsClick = { onSettingsClick(userId)},
+            onSettingsClick = {
+                coroutineScope.launch {
+                    val needsReAuth = viewModel.onCheckForReAuth(ReAuthAction.SETTINGS)
+                    if (!needsReAuth) {
+                        onSettingsClick(userId)
+                    }
+                }
+            },
             onTransactionClicked = viewModel::onTransactionClicked,
-            onExportClick =  viewModel::onShowExportBottomSheet ,
-            onShowAllTransactionsClick = { onShowAllTransactionsClick(userId) },
+            onExportClick = viewModel::onShowExportBottomSheet,
+            onShowAllTransactionsClick = {
+                coroutineScope.launch {
+                    val needsReAuth = viewModel.onCheckForReAuth(ReAuthAction.SHOW_ALL)
+                    if (!needsReAuth) {
+                        onShowAllTransactionsClick(userId)
+                    }
+                }
+
+            },
             onDismissExportBottomSheet = viewModel::onHideExportBottomSheet,
             onPromptForPin = onPromptForPin
         )
 
-        when{
+        when {
             model.isLoading -> LoadingSpinner()
             model.isError -> ErrorScreen()
             else -> {
-                CompositionLocalProvider(LocalTransactionFormatter provides TransactionFormatter(
-                    currencySymbol = model.userPreferences?.currencySymbol ?: "$",
-                    thousandsSeparator = model.userPreferences?.thousandsSeparator ?: ",",
-                    decimalSeparator = model.userPreferences?.decimalSeparator ?: ".",
-                    useBracketsForExpense = model.userPreferences?.useBracketsForExpense ?: false
-                )) {
+                CompositionLocalProvider(
+                    LocalTransactionFormatter provides TransactionFormatter(
+                        currencySymbol = model.userPreferences?.currencySymbol ?: "$",
+                        thousandsSeparator = model.userPreferences?.thousandsSeparator ?: ",",
+                        decimalSeparator = model.userPreferences?.decimalSeparator ?: ".",
+                        useBracketsForExpense = model.userPreferences?.useBracketsForExpense
+                            ?: false
+                    )
+                ) {
                     DashboardScaffold(
                         modifier = Modifier.fillMaxSize(),
                         dashboardActions = dashboardActions,
@@ -150,15 +207,15 @@ private fun DashboardScaffold(
     model: DashboardScreenModel,
     backStackEntry: NavBackStackEntry?,
 
-    ){
+    ) {
 
     if (model.showExportBottomSheet) {
         model.user?.id?.let { userId ->
             ExportBottomSheetModal(
                 userId = userId,
                 backStackEntry = backStackEntry,
-                onPromptForPin = { dashboardActions.onPromptForPin()},
-                onDismiss = { dashboardActions.onDismissExportBottomSheet()}
+                onPromptForPin = { dashboardActions.onPromptForPin() },
+                onDismiss = { dashboardActions.onDismissExportBottomSheet() }
             )
         }
     }
@@ -187,7 +244,7 @@ private fun DashboardScaffold(
                 }
 
                 LazyColumn {
-                    items(model.transactionsGroupedByDate){
+                    items(model.transactionsGroupedByDate) {
                         TransactionByDayItem(
                             modifier = Modifier.fillMaxWidth(),
                             formattedDate = it.dateLabel,
@@ -205,13 +262,15 @@ private fun DashboardScaffold(
         sheetDragHandle = { BottomSheetDefaults.DragHandle() },
         topBar = {
             TopAppBar(
-                title = { Text(
-                    text = model.user?.username ?: "",
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.titleLarge)
+                title = {
+                    Text(
+                        text = model.user?.username ?: "",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 },
                 actions = {
-                    if(model.transactions.isNotEmpty()){
+                    if (model.transactions.isNotEmpty()) {
                         IconButton(
                             modifier = Modifier
                                 .padding(end = 8.dp)
@@ -357,10 +416,12 @@ fun DashboardScaffoldPreview() {
         CompositionLocalProvider(
             LocalTransactionFormatter provides transactionFormatter
         ) {
-            DashboardScaffold(modifier = Modifier.fillMaxSize(),
+            DashboardScaffold(
+                modifier = Modifier.fillMaxSize(),
                 dashboardActions = actions,
                 model = model,
-                backStackEntry = null)
+                backStackEntry = null
+            )
         }
     }
 }
