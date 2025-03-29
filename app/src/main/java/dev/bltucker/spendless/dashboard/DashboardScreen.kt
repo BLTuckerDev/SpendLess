@@ -4,22 +4,31 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -73,7 +82,8 @@ data class DashboardActions(
     val onShowAllTransactionsClick: () -> Unit,
     val onExportClick: () -> Unit,
     val onDismissExportBottomSheet: () -> Unit = {},
-    val onPromptForPin: () -> Unit = {}
+    val onPromptForPin: () -> Unit = {},
+    val onCreateTransactionClick: () -> Unit = {},
 )
 
 fun createDashboardRoute(userId: Long): String {
@@ -209,6 +219,7 @@ private fun DashboardScaffold(
 
     ) {
 
+
     if (model.showExportBottomSheet) {
         model.user?.id?.let { userId ->
             ExportBottomSheetModal(
@@ -220,113 +231,128 @@ private fun DashboardScaffold(
         }
     }
 
-    BottomSheetScaffold(
-        modifier = modifier,
-        sheetContent = {
+    Box(modifier = modifier,){
+        BottomSheetScaffold(
+            modifier = Modifier,
+            sheetContent = {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = "Latest Transactions",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    TextButton(onClick = { dashboardActions.onShowAllTransactionsClick() }) {
-                        Text("Show all")
-                    }
-                }
-
-                LazyColumn {
-                    items(model.transactionsGroupedByDate) {
-                        TransactionByDayItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            formattedDate = it.dateLabel,
-                            transactions = it.transactions,
-                            selectedTransactionId = model.clickedTransactionId,
-                            onTransactionClicked = dashboardActions.onTransactionClicked,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Latest Transactions",
+                            style = MaterialTheme.typography.titleLarge
                         )
+                        TextButton(onClick = { dashboardActions.onShowAllTransactionsClick() }) {
+                            Text("Show all")
+                        }
+                    }
+
+                    LazyColumn {
+                        items(model.transactionsGroupedByDate) {
+                            TransactionByDayItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                formattedDate = it.dateLabel,
+                                transactions = it.transactions,
+                                selectedTransactionId = model.clickedTransactionId,
+                                onTransactionClicked = dashboardActions.onTransactionClicked,
+                            )
+                        }
                     }
                 }
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.primary,
-        sheetPeekHeight = 400.dp,
-        sheetContainerColor = Color(0xFFFEF7FF),
-        sheetDragHandle = { BottomSheetDefaults.DragHandle() },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = model.user?.username ?: "",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                actions = {
-                    if (model.transactions.isNotEmpty()) {
+            },
+            containerColor = MaterialTheme.colorScheme.primary,
+            sheetPeekHeight = 400.dp,
+            sheetContainerColor = Color(0xFFFEF7FF),
+            sheetDragHandle = { BottomSheetDefaults.DragHandle() },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = model.user?.username ?: "",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    },
+                    actions = {
+                        if (model.transactions.isNotEmpty()) {
+                            IconButton(
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .background(
+                                        color = Color(0x1FFFFFFF),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                onClick = { dashboardActions.onExportClick() }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.export),
+                                    contentDescription = "Export",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                        }
+
                         IconButton(
                             modifier = Modifier
-                                .padding(end = 8.dp)
+                                .padding(end = 16.dp)
                                 .background(
                                     color = Color(0x1FFFFFFF),
                                     shape = RoundedCornerShape(16.dp)
                                 ),
-                            onClick = { dashboardActions.onExportClick() }) {
+                            onClick = { dashboardActions.onSettingsClick() }) {
                             Icon(
-                                painter = painterResource(R.drawable.export),
-                                contentDescription = "Export",
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings",
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
-                    }
-
-                    IconButton(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .background(
-                                color = Color(0x1FFFFFFF),
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        onClick = { dashboardActions.onSettingsClick() }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 )
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(paddingValues)
-                .padding(horizontal = 8.dp)
-        ) {
-
-            AccountBalance(
-                modifier = modifier
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 40.dp, horizontal = 72.dp),
-                accountBalance = model.formattedAccountBalance()
-            )
+                    .padding(paddingValues)
+                    .padding(horizontal = 8.dp)
+            ) {
+
+                AccountBalance(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 40.dp, horizontal = 72.dp),
+                    accountBalance = model.formattedAccountBalance()
+                )
+            }
+        }
+
+        FloatingActionButton(
+            onClick = { dashboardActions.onCreateTransactionClick() },
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Position the FAB
+                .padding(16.dp)
+                .padding(NavigationBarDefaults.windowInsets.asPaddingValues())
+
+        ) {
+            Icon(Icons.Filled.Add, "Create Transaction")
         }
     }
 }
 
 
-@Preview
+@Preview()
 @Composable
 fun DashboardScaffoldPreview() {
 

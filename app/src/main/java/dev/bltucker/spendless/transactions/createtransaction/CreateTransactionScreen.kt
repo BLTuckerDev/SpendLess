@@ -2,6 +2,7 @@ package dev.bltucker.spendless.transactions.createtransaction
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -109,7 +111,11 @@ fun CreateTransactionContent(
     onCreateClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true,
+        confirmValueChange = {
+            it != SheetValue.Hidden
+        }
+    )
 
     ModalBottomSheet(
         onDismissRequest = {
@@ -123,6 +129,7 @@ fun CreateTransactionContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight(0.95f)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
