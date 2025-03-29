@@ -96,7 +96,7 @@ fun NavGraphBuilder.dashboardScreen(
     onSettingsClick: (Long) -> Unit,
     onShowAllTransactionsClick: (Long) -> Unit,
     onPromptForPin: () -> Unit,
-
+    onNavigateToCreateTransaction: (Long) -> Unit,
     ) {
     composable(
         route = "dashboard/{userId}",
@@ -130,7 +130,8 @@ fun NavGraphBuilder.dashboardScreen(
 
                         when (reAuthAction) {
                             ReAuthAction.SHOW_ALL -> onShowAllTransactionsClick(userId)
-                            ReAuthAction.FAB -> { /* HANDLE FAB */
+                            ReAuthAction.FAB -> {
+                                onNavigateToCreateTransaction(userId)
                             }
 
                             ReAuthAction.SETTINGS -> onSettingsClick(userId)
@@ -180,7 +181,15 @@ fun NavGraphBuilder.dashboardScreen(
 
             },
             onDismissExportBottomSheet = viewModel::onHideExportBottomSheet,
-            onPromptForPin = onPromptForPin
+            onPromptForPin = onPromptForPin,
+            onCreateTransactionClick = {
+                coroutineScope.launch {
+                    val needsReAuth = viewModel.onCheckForReAuth(ReAuthAction.FAB)
+                    if (!needsReAuth) {
+                        onNavigateToCreateTransaction(userId)
+                    }
+                }
+            }
         )
 
         when {

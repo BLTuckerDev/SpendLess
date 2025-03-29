@@ -24,6 +24,7 @@ import dev.bltucker.spendless.settings.SettingsScreenNavArgs
 import dev.bltucker.spendless.settings.settingsScreen
 import dev.bltucker.spendless.transactions.alltransactions.AllTransactionsScreenNavArgs
 import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
+import dev.bltucker.spendless.transactions.createtransaction.createCreateTransactionRoute
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
 
 @Composable
@@ -135,6 +136,9 @@ fun SpendLessNavigationGraph(
             onNavigateBack = {
                 navigationController.popBackStack()
             },
+            onNavigateToCreateTransaction = { userId ->
+                navigationController.navigate(createCreateTransactionRoute(userId))
+            },
             onSettingsClick = { userId ->
                 navigationController.navigate(SettingsScreenNavArgs(userId))
             },
@@ -197,9 +201,20 @@ fun SpendLessNavigationGraph(
         // ---------------- TODO ----------------------------
 
 
-        createTransactionsScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        createTransactionsScreen(
+            onNavigateBack = { userId ->
+                navigationController.navigate(createDashboardRoute(userId)){
+                    popUpTo(createCreateTransactionRoute(userId)) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+
+                }
+            },
+            onPromptForPin = {
+                navigationController.navigate(createAuthenticationRoute(null))
+            },
+        )
 
 
     }

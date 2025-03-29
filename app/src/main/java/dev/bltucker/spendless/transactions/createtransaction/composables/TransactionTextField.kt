@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ import dev.bltucker.spendless.common.theme.SpendLessTheme
 @Composable
 fun TransactionTextField(
     modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String
@@ -42,6 +44,7 @@ fun TransactionTextField(
         modifier = modifier,
         value = value,
         onValueChange = onValueChange,
+        keyboardOptions =keyboardOptions,
         textStyle = TextStyle(
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurface,
@@ -87,21 +90,24 @@ private fun TransactionTextFieldPreview() {
                 TransactionTextField(
                     value = "Netflix",
                     onValueChange = {},
-                    placeholder = "Receiver"
+                    placeholder = "Receiver",
+                    keyboardOptions = KeyboardOptions.Default
                 )
 
                 TransactionTextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = text,
                     onValueChange = { text = it },
-                    placeholder = "Receiver"
+                    placeholder = "Receiver",
+                    keyboardOptions = KeyboardOptions.Default
                 )
 
 
                 TransactionTextField(
                     value = "Netflix",
                     onValueChange = {},
-                    placeholder = "Receiver"
+                    placeholder = "Receiver",
+                    keyboardOptions = KeyboardOptions.Default,
                 )
             }
         }
