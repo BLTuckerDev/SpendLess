@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import dev.bltucker.spendless.authentication.RE_AUTH_SUCCESS
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.theme.Primary
@@ -49,12 +51,31 @@ data class SecurityScreenNavArgs(
 )
 
 
-fun NavGraphBuilder.securityScreen(onNavigateBack: () -> Unit) {
+fun NavGraphBuilder.securityScreen(onNavigateBack: () -> Unit,
+                                   onPromptForPin: () -> Unit,) {
     composable<SecurityScreenNavArgs>{ backStackEntry ->
         val args = backStackEntry.toRoute<SecurityScreenNavArgs>()
         val viewModel = hiltViewModel<SecuritySettingsScreenViewModel>()
 
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
+
+        val savedStateHandle = backStackEntry.savedStateHandle
+
+        LaunchedEffect(savedStateHandle) {
+            savedStateHandle.getLiveData<Boolean>(RE_AUTH_SUCCESS).observe(backStackEntry) { success ->
+                if (success) {
+                    savedStateHandle.remove<Boolean>(RE_AUTH_SUCCESS)
+                    viewModel.onSaveClick()
+                }
+            }
+        }
+
+        LaunchedEffect(model.shouldReauthenticate) {
+            if(model.shouldReauthenticate){
+                viewModel.onClearShouldReauthenticate()
+                onPromptForPin()
+            }
+        }
 
 
         LifecycleStartEffect(Unit) {

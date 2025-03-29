@@ -84,6 +84,16 @@ class SecuritySettingsScreenViewModel @Inject constructor(
 
     fun onSaveClick() {
         viewModelScope.launch {
+            val needsToReauth = userRepository.needsReauthentication()
+
+            if(needsToReauth){
+                mutableModel.update {
+                    it.copy(shouldReauthenticate = true)
+                }
+                return@launch
+            }
+
+
             val userId = mutableModel.value.userId ?: return@launch
             val sessionDuration = mutableModel.value.sessionExpirationTimeMinutes ?: return@launch
             val lockoutDuration = mutableModel.value.lockedOutDurationSeconds ?: return@launch
@@ -97,6 +107,12 @@ class SecuritySettingsScreenViewModel @Inject constructor(
             )
 
             userRepository.updateSecuritySettings(updatedSettings)
+        }
+    }
+
+    fun onClearShouldReauthenticate(){
+        mutableModel.update {
+            it.copy(shouldReauthenticate = false)
         }
     }
 }

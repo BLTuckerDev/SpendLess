@@ -27,8 +27,10 @@ import dev.bltucker.spendless.transactions.alltransactions.allTransactionsScreen
 import dev.bltucker.spendless.transactions.createtransaction.createTransactionsScreen
 
 @Composable
-fun SpendLessNavigationGraph(navigationController: NavHostController,
-                             startDestination: String = LOGIN_SCREEN_ROUTE) {
+fun SpendLessNavigationGraph(
+    navigationController: NavHostController,
+    startDestination: String = LOGIN_SCREEN_ROUTE
+) {
     NavHost(
         navController = navigationController,
         startDestination = startDestination
@@ -119,9 +121,13 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             }
         )
 
-        securityScreen(onNavigateBack = {
-            navigationController.popBackStack()
-        })
+        securityScreen(
+            onPromptForPin = {
+                navigationController.navigate(createAuthenticationRoute(null))
+            },
+            onNavigateBack = {
+                navigationController.popBackStack()
+            })
 
         ///TODO needs fab for creating
         //TODO needs content for the stuff above the bottomsheet
@@ -136,7 +142,7 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
                 navigationController.navigate(AllTransactionsScreenNavArgs(userId))
             },
             onFallBackToLogin = {
-                navigationController.navigate(LOGIN_SCREEN_ROUTE){
+                navigationController.navigate(LOGIN_SCREEN_ROUTE) {
                     popUpTo(navigationController.graph.startDestinationId) {
                         inclusive = true
                     }
@@ -153,7 +159,10 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
         authenticationScreen(
             onNavigateBack = {
                 Log.d("NavDebug", "Popping Back")
-                navigationController.previousBackStackEntry?.savedStateHandle?.set(RE_AUTH_SUCCESS, true)
+                navigationController.previousBackStackEntry?.savedStateHandle?.set(
+                    RE_AUTH_SUCCESS,
+                    true
+                )
                 navigationController.popBackStack()
             },
             onLogoutClicked = {
@@ -166,7 +175,10 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             },
             onNavigateToIntendedDestination = { destinationRoute ->
                 Log.d("NavDebug", "Destination: $destinationRoute")
-                navigationController.previousBackStackEntry?.savedStateHandle?.set(RE_AUTH_SUCCESS, true)
+                navigationController.previousBackStackEntry?.savedStateHandle?.set(
+                    RE_AUTH_SUCCESS,
+                    true
+                )
 
                 navigationController.navigate(destinationRoute) {
                     popUpTo(AUTHENTICATION_SCREEN_NAV_ROUTE) { inclusive = true }
