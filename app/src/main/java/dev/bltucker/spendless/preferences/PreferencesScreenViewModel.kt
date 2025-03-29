@@ -146,8 +146,24 @@ class PreferencesScreenViewModel @Inject constructor(
         }
     }
 
+    fun onClearShouldReauthenticate(){
+        mutableModel.update {
+            it.copy(shouldReauthenticate = false)
+        }
+    }
+
     fun onSaveClick() {
         viewModelScope.launch {
+
+            val needsToReauth = userRepository.needsReauthentication()
+
+            if(needsToReauth){
+                mutableModel.update {
+                    it.copy(shouldReauthenticate = true)
+                }
+                return@launch
+            }
+
             val updatedPreferences = mutableModel.value.getPreferencesEntity() ?: return@launch
 
             userRepository.updateUserPreferences(updatedPreferences)

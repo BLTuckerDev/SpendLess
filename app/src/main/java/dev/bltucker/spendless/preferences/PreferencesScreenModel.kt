@@ -13,6 +13,7 @@ data class PreferencesScreenModel(
     val decimalSeparator: String,
     val thousandsSeparator: String,
     val shouldNavToDashboard: Boolean = false,
+    val shouldReauthenticate: Boolean = false,
 ){
 
     val formattedAmount = if(useBracketsForExpense){

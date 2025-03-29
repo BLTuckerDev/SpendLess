@@ -49,6 +49,8 @@ import dev.bltucker.spendless.common.theme.Primary
 import dev.bltucker.spendless.common.theme.SpendLessTheme
 import dev.bltucker.spendless.common.theme.SurfaceContainerLowest
 
+const val RE_AUTH_SUCCESS = "reAuthSuccess"
+
 const val DESTINATION_ROUTE_ARG = "destinationRoute"
 const val AUTHENTICATION_SCREEN_ROUTE = "authentication"
 

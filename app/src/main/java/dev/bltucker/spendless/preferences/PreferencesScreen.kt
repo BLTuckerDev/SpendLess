@@ -1,7 +1,6 @@
 package dev.bltucker.spendless.preferences
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +22,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import dev.bltucker.spendless.authentication.RE_AUTH_SUCCESS
 import dev.bltucker.spendless.common.composables.ErrorScreen
 import dev.bltucker.spendless.common.composables.LoadingSpinner
 import dev.bltucker.spendless.common.theme.Primary
@@ -56,17 +56,36 @@ fun NavGraphBuilder.preferencesScreen(
     onNavigateBack: () -> Unit,
     onNavigateBackToPinCreate: (String) -> Unit,
     onNavigateToDashboard: (Long) -> Unit,
+    onPromptForPin: () -> Unit,
 ) {
     composable<PreferencesScreenNavArgs> { backStackEntry ->
         val args = backStackEntry.toRoute<PreferencesScreenNavArgs>()
         val viewModel: PreferencesScreenViewModel = hiltViewModel<PreferencesScreenViewModel>()
         val model by viewModel.observableModel.collectAsStateWithLifecycle()
 
+        val savedStateHandle = backStackEntry.savedStateHandle
+
+        LaunchedEffect(savedStateHandle) {
+            savedStateHandle.getLiveData<Boolean>(RE_AUTH_SUCCESS).observe(backStackEntry) { success ->
+                if (success) {
+                    savedStateHandle.remove<Boolean>(RE_AUTH_SUCCESS)
+                    viewModel.onSaveClick()
+                }
+            }
+        }
+
         BackHandler {
             if(args.userId == null && args.username != null){
                 onNavigateBackToPinCreate(args.username)
             } else {
                 onNavigateBack()
+            }
+        }
+
+        LaunchedEffect(model.shouldReauthenticate) {
+            if(model.shouldReauthenticate){
+                viewModel.onClearShouldReauthenticate()
+                onPromptForPin()
             }
         }
 

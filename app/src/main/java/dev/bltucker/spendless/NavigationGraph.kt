@@ -5,7 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import dev.bltucker.spendless.authentication.AUTHENTICATION_SCREEN_NAV_ROUTE
+import dev.bltucker.spendless.authentication.RE_AUTH_SUCCESS
 import dev.bltucker.spendless.authentication.authenticationScreen
+import dev.bltucker.spendless.authentication.createAuthenticationRoute
 import dev.bltucker.spendless.dashboard.createDashboardRoute
 import dev.bltucker.spendless.dashboard.dashboardScreen
 import dev.bltucker.spendless.login.LOGIN_SCREEN_ROUTE
@@ -55,6 +57,10 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
                     route = CreatePinScreenNavArgs(username),
                     inclusive = false
                 )
+            },
+
+            onPromptForPin = {
+                navigationController.navigate(createAuthenticationRoute(null))
             },
 
             onNavigateToDashboard = { userId ->
@@ -147,7 +153,7 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
         authenticationScreen(
             onNavigateBack = {
                 Log.d("NavDebug", "Popping Back")
-
+                navigationController.previousBackStackEntry?.savedStateHandle?.set(RE_AUTH_SUCCESS, true)
                 navigationController.popBackStack()
             },
             onLogoutClicked = {
@@ -160,6 +166,8 @@ fun SpendLessNavigationGraph(navigationController: NavHostController,
             },
             onNavigateToIntendedDestination = { destinationRoute ->
                 Log.d("NavDebug", "Destination: $destinationRoute")
+                navigationController.previousBackStackEntry?.savedStateHandle?.set(RE_AUTH_SUCCESS, true)
+
                 navigationController.navigate(destinationRoute) {
                     popUpTo(AUTHENTICATION_SCREEN_NAV_ROUTE) { inclusive = true }
                     launchSingleTop = true
